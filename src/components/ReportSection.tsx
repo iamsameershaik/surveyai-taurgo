@@ -1,10 +1,125 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Copy, Calendar, Eye, EyeOff } from 'lucide-react';
-import { ImageAnalysis } from '../types';
+import { ImageAnalysis, Citation } from '../types';
 import { SeverityGauge } from './SeverityGauge';
 import { DefectHighlightViewer } from './DefectHighlightViewer';
 import { buildReportText, getSeverityClass } from '../utils';
+
+interface CitationsPanelProps {
+  citations: Citation[];
+}
+
+function CitationsPanel({ citations }: CitationsPanelProps) {
+  const [expanded, setExpanded] = useState(false);
+
+  if (!citations || citations.length === 0) return null;
+
+  return (
+    <div
+      style={{
+        marginTop: '16px',
+        border: '1px solid rgba(255,255,255,0.6)',
+        borderRadius: '12px',
+        overflow: 'hidden',
+        background: 'rgba(255,255,255,0.3)',
+      }}
+    >
+      <button
+        onClick={() => setExpanded(!expanded)}
+        style={{
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '14px 18px',
+          background: 'transparent',
+          border: 'none',
+          cursor: 'pointer',
+          fontFamily: 'inherit',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span style={{ fontSize: '16px' }}>📚</span>
+          <span
+            style={{
+              fontSize: '12px',
+              fontWeight: '700',
+              letterSpacing: '1.5px',
+              textTransform: 'uppercase',
+              color: '#1a3a6b',
+            }}
+          >
+            Standards & References
+          </span>
+          <span
+            style={{
+              fontSize: '10px',
+              background: 'rgba(26,58,107,0.1)',
+              color: '#1a3a6b',
+              padding: '2px 8px',
+              borderRadius: '20px',
+              fontWeight: '600',
+            }}
+          >
+            {citations.length}
+          </span>
+        </div>
+        <span style={{ color: '#6b7280', fontSize: '14px' }}>{expanded ? '▲' : '▼'}</span>
+      </button>
+
+      {expanded && (
+        <div style={{ padding: '0 18px 16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {citations.map((cite, i) => (
+            <div
+              key={i}
+              style={{
+                padding: '12px 14px',
+                background: 'rgba(255,255,255,0.5)',
+                borderRadius: '8px',
+                border: '1px solid rgba(26,58,107,0.12)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '4px',
+              }}
+            >
+              <div
+                style={{
+                  fontFamily: 'monospace',
+                  fontSize: '11px',
+                  fontWeight: '700',
+                  color: '#1a3a6b',
+                  background: 'rgba(26,58,107,0.08)',
+                  display: 'inline-block',
+                  padding: '2px 8px',
+                  borderRadius: '4px',
+                  width: 'fit-content',
+                  letterSpacing: '0.3px',
+                }}
+              >
+                {cite.reference}
+              </div>
+              <div style={{ fontSize: '13px', fontWeight: '600', color: '#1a2035' }}>{cite.title}</div>
+              <div style={{ fontSize: '12px', color: '#4a5578', lineHeight: '1.5' }}>{cite.relevance}</div>
+            </div>
+          ))}
+          <div
+            style={{
+              fontSize: '10px',
+              color: '#9ca3af',
+              fontStyle: 'italic',
+              marginTop: '4px',
+              letterSpacing: '0.2px',
+            }}
+          >
+            References sourced from RICS guidance notes, British Standards, and UK Building Regulations. Always
+            verify applicability with a qualified Chartered Surveyor.
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 interface ReportSectionProps {
   images: ImageAnalysis[];
@@ -276,6 +391,8 @@ export function ReportSection({ images }: ReportSectionProps) {
                       ))}
                     </div>
                   </div>
+
+                  <CitationsPanel citations={image.report.citations || []} />
 
                   <div className="flex flex-wrap gap-3 no-print">
                     <button

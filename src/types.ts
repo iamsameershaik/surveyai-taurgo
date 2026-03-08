@@ -28,6 +28,12 @@ export interface Recommendation {
   timeframe: string;
 }
 
+export interface Citation {
+  reference: string;
+  title: string;
+  relevance: string;
+}
+
 export interface DefectZone {
   defect_name: string;
   x_percent: number;
@@ -48,6 +54,7 @@ export interface AnalysisReport {
   recommendations: Recommendation[];
   location_context_notes?: string;
   defect_zones?: DefectZone[];
+  citations?: Citation[];
 }
 
 export interface PropertyContext {

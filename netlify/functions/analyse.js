@@ -119,6 +119,13 @@ Return this exact structure:
     }
   ],
   "location_context_notes": "Any specific notes given the property context provided",
+  "citations": [
+    {
+      "reference": "Standard or guidance note reference (e.g. BS 5250:2021)",
+      "title": "Full title of the standard or guidance",
+      "relevance": "One sentence explaining why this standard applies to the identified defect"
+    }
+  ],
   "defect_zones": [
     {
       "defect_name": "name matching a defect_category",
@@ -166,6 +173,33 @@ Return this exact structure:
 6. Do NOT use colloquial language, bullet points, first-person voice, or consumer-facing simplifications. The output must read as if written by a qualified RICS Chartered Surveyor for inclusion in a formal Level 2 HomeBuyer Report.
 
 The survey_description must be 4–5 sentences only.
+
+"citations": Provide 2–4 relevant UK building standards, RICS guidance notes, or British Standards that apply to the defects identified in this image. Use only real, verifiable references. Format each citation precisely as a qualified RICS surveyor would in a formal report. Acceptable reference sources include:
+
+RICS Guidance Notes and Practice Statements:
+- RICS Guidance Note: Damp in Buildings (2022)
+- RICS HomeBuyer Report (Survey) — Professional Statement (2019)
+- RICS Condition Report — Professional Statement
+- RICS Surveying Safely (2nd edition)
+- RICS Valuation — Global Standards (Red Book)
+
+British Standards (BS) and ISO Standards:
+- BS 5250:2021 — Management of moisture in buildings
+- BS 8102:2022 — Protection of below-ground structures against water ingress
+- BS 6399 — Loading for buildings
+- BS 8004 — Code of practice for foundations
+- BS 5534:2014 — Code of practice for slating and tiling
+- BS 6229:2003 — Flat roofs with continuously supported flexible waterproof coverings
+- BS 8215:1991 — Design and installation of damp-proof courses in masonry construction
+- BS 6093:2006 — Design of joints and jointing in building construction
+
+Building Regulations (England):
+- Approved Document C — Site preparation and resistance to contaminants and moisture
+- Approved Document A — Structure
+- Approved Document F — Ventilation
+- Approved Document L — Conservation of fuel and power
+
+ONLY cite standards that are directly relevant to the defects observed. Do NOT fabricate reference numbers or titles. If fewer than 2 directly relevant standards exist, cite only those that genuinely apply. Accuracy is essential.
 
 Be technically precise. Use proper RICS surveying terminology. Cost estimates must reflect 2025 UK market rates.`;
 }
