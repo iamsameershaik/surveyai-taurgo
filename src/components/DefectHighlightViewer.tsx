@@ -1,4 +1,11 @@
-import { DefectZone } from '../types';
+interface DefectZone {
+  defect_name: string;
+  x_percent: number;
+  y_percent: number;
+  w_percent: number;
+  h_percent: number;
+  color: string;
+}
 
 interface DefectHighlightViewerProps {
   imageSrc: string;
@@ -6,79 +13,87 @@ interface DefectHighlightViewerProps {
   showOverlay: boolean;
 }
 
-export function DefectHighlightViewer({
-  imageSrc,
-  defectZones,
-  showOverlay,
-}: DefectHighlightViewerProps) {
+export function DefectHighlightViewer({ imageSrc, defectZones, showOverlay }: DefectHighlightViewerProps) {
   return (
-    <div
-      style={{
-        position: 'relative',
-        display: 'inline-block',
-        width: '100%',
-        borderRadius: '12px',
-        overflow: 'hidden',
-      }}
-    >
+    <div style={{
+      position: 'relative',
+      display: 'block',
+      width: '100%',
+      lineHeight: 0,
+      borderRadius: '12px',
+      overflow: 'hidden',
+    }}>
       <img
         src={imageSrc}
         alt="Property with defect zones"
-        style={{ width: '100%', display: 'block', borderRadius: '12px' }}
+        style={{
+          width: '100%',
+          height: 'auto',
+          display: 'block',
+          borderRadius: '12px',
+        }}
         onError={(e) => {
-          const target = e.target as HTMLImageElement;
-          target.style.display = 'none';
-          const placeholder = document.createElement('div');
-          placeholder.style.cssText =
-            'width:100%;height:200px;background:#f3f4f6;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:40px;';
-          placeholder.textContent = '🏠';
-          if (target.parentNode && !target.parentNode.querySelector('div')) {
-            target.parentNode.insertBefore(placeholder, target);
-          }
+          (e.target as HTMLImageElement).style.display = 'none';
         }}
       />
-      {showOverlay &&
-        defectZones &&
-        defectZones.map((zone, i) => (
-          <div
-            key={i}
-            style={{
-              position: 'absolute',
-              left: `${zone.x_percent}%`,
-              top: `${zone.y_percent}%`,
-              width: `${zone.w_percent}%`,
-              height: `${zone.h_percent}%`,
-              border: `2px solid ${zone.color}`,
-              backgroundColor: `${zone.color}22`,
-              borderRadius: '4px',
-              boxShadow: `0 0 0 1px ${zone.color}44`,
-              transition: 'opacity 0.3s',
-              cursor: 'pointer',
-            }}
-            title={zone.defect_name}
-          >
-            <div
-              style={{
-                position: 'absolute',
-                top: '-1px',
-                left: '-1px',
-                background: zone.color,
-                color: 'white',
-                fontSize: '9px',
-                fontWeight: '700',
-                padding: '2px 6px',
-                borderRadius: '3px 0 3px 0',
-                letterSpacing: '0.3px',
-                whiteSpace: 'nowrap',
-                maxWidth: '120px',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-              }}
-            >
-              {zone.defect_name}
-            </div>
-          </div>
-        ))}
+
+      {showOverlay && defectZones && defectZones.length > 0 && (
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          pointerEvents: 'none',
+        }}>
+          {defectZones.map((zone, i) => {
+            const x = Math.max(0, Math.min(zone.x_percent, 95));
+            const y = Math.max(0, Math.min(zone.y_percent, 95));
+            const w = Math.max(2, Math.min(zone.w_percent, 100 - x));
+            const h = Math.max(2, Math.min(zone.h_percent, 100 - y));
+
+            return (
+              <div
+                key={i}
+                style={{
+                  position: 'absolute',
+                  left: `${x}%`,
+                  top: `${y}%`,
+                  width: `${w}%`,
+                  height: `${h}%`,
+                  border: `2px solid ${zone.color}`,
+                  backgroundColor: `${zone.color}20`,
+                  borderRadius: '3px',
+                  boxSizing: 'border-box',
+                  pointerEvents: 'auto',
+                }}
+                title={zone.defect_name}
+              >
+                <div style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  background: zone.color,
+                  color: 'white',
+                  fontSize: '9px',
+                  fontWeight: '700',
+                  padding: '2px 5px',
+                  borderRadius: '2px 0 2px 0',
+                  letterSpacing: '0.2px',
+                  whiteSpace: 'nowrap',
+                  maxWidth: '100%',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  lineHeight: '1.4',
+                  boxSizing: 'border-box',
+                }}>
+                  {zone.defect_name}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
