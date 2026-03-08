@@ -235,53 +235,6 @@ code, pre, .mono {
   border-color: var(--severity-monitor);
 }
 
-@media print {
-  body {
-    background: white;
-  }
-
-  .no-print {
-    display: none !important;
-  }
-
-  .glass-panel {
-    background: white;
-    backdrop-filter: none;
-    box-shadow: none;
-    border: 1px solid #e5e7eb;
-  }
-
-  body.print-report-mode * {
-    visibility: hidden;
-  }
-
-  body.print-report-mode .report-printable-area,
-  body.print-report-mode .report-printable-area * {
-    visibility: visible;
-  }
-
-  body.print-report-mode .report-printable-area {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    padding: 32px;
-    background: white !important;
-  }
-
-  body.print-report-mode .report-printable-area * {
-    box-shadow: none !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    background: white !important;
-    color: #1a2035 !important;
-    border-color: #ddd !important;
-  }
-
-  @page {
-    margin: 20mm;
-  }
-}
 
 @media (max-width: 768px) {
   h1 {

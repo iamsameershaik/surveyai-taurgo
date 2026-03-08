@@ -9,6 +9,7 @@ import { ReportHistory } from './components/ReportHistory';
 import { useImageAnalysis } from './hooks/useImageAnalysis';
 import { PropertyContext } from './types';
 import { Download } from 'lucide-react';
+import { generatePDF } from './utils/generatePDF';
 
 function App() {
   const {
@@ -21,12 +22,20 @@ function App() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [currentAnalyzingImage, setCurrentAnalyzingImage] = useState<string | undefined>();
   const [copyButtonLabel, setCopyButtonLabel] = useState('📋 Copy Entire Report');
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [surveyContext, setSurveyContext] = useState<PropertyContext>({
+    propertyType: 'Residential',
+    buildingAge: 'Unknown',
+    locationType: 'Standard',
+    reportPurpose: 'General Inspection',
+  });
 
   const handleGetStarted = () => {
     document.getElementById('upload')?.scrollIntoView({ behavior: 'smooth' });
   };
 
   const handleAnalyze = async (context: PropertyContext) => {
+    setSurveyContext(context);
     setIsAnalyzing(true);
     const unanalyzedImages = images.filter((img) => !img.report && !img.error);
     if (unanalyzedImages.length > 0) {
@@ -104,12 +113,36 @@ END OF REPORT
     }, 2000);
   };
 
-  const downloadPDF = () => {
-    document.body.classList.add('print-report-mode');
-    window.print();
-    setTimeout(() => {
-      document.body.classList.remove('print-report-mode');
-    }, 1000);
+  const handleDownloadPDF = async () => {
+    setIsGeneratingPDF(true);
+    try {
+      const analyzedImages = images.filter((img) => img.report);
+      const reports = analyzedImages.map((image) => ({
+        ref: image.reference,
+        date: image.timestamp.toLocaleDateString('en-GB', {
+          day: '2-digit',
+          month: 'long',
+          year: 'numeric',
+        }),
+        previewUrl: image.dataUrl,
+        severity: image.report!.severity,
+        severityScore: image.report!.severity_score,
+        urgency: image.report!.urgency,
+        defectCategories: image.report!.defect_categories,
+        surveyDescription: image.report!.survey_description,
+        riskMatrix: image.report!.risk_matrix,
+        costEstimate: image.report!.cost_estimate,
+        recommendations: image.report!.recommendations,
+        citations: image.report!.citations || [],
+        analysisLimitations: image.report!.analysis_limitations || undefined,
+      }));
+      await generatePDF(reports, surveyContext);
+    } catch (err) {
+      console.error('PDF generation failed:', err);
+      alert('PDF generation failed. Please try again.');
+    } finally {
+      setIsGeneratingPDF(false);
+    }
   };
 
   const analyzedImages = images.filter((img) => img.report);
@@ -127,32 +160,31 @@ END OF REPORT
 
       <ReportHistory images={images} />
 
-      <div className="report-printable-area">
-        <ReportSection images={images} />
-        <ComparisonDashboard images={images} />
+      <ReportSection images={images} />
+      <ComparisonDashboard images={images} />
 
-        {analyzedImages.length > 0 && (
-          <section className="py-8 px-4 no-print">
-            <div className="max-w-4xl mx-auto flex flex-col sm:flex-row gap-3 justify-center">
-              <button
-                onClick={copyEntireReport}
-                className="neu-button px-8 py-4 text-white font-semibold inline-flex items-center justify-center gap-3 text-base sm:text-lg"
-                style={{ background: 'var(--accent-primary)' }}
-              >
-                {copyButtonLabel}
-              </button>
-              <button
-                onClick={downloadPDF}
-                className="neu-button px-8 py-4 text-white font-semibold inline-flex items-center justify-center gap-3 text-base sm:text-lg"
-                style={{ background: 'var(--accent-primary)' }}
-              >
-                <Download size={20} />
-                Download PDF
-              </button>
-            </div>
-          </section>
-        )}
-      </div>
+      {analyzedImages.length > 0 && (
+        <section className="py-8 px-4">
+          <div className="max-w-4xl mx-auto flex flex-col sm:flex-row gap-3 justify-center">
+            <button
+              onClick={copyEntireReport}
+              className="neu-button px-8 py-4 text-white font-semibold inline-flex items-center justify-center gap-3 text-base sm:text-lg"
+              style={{ background: 'var(--accent-primary)' }}
+            >
+              {copyButtonLabel}
+            </button>
+            <button
+              onClick={handleDownloadPDF}
+              disabled={isGeneratingPDF}
+              className="neu-button px-8 py-4 text-white font-semibold inline-flex items-center justify-center gap-3 text-base sm:text-lg"
+              style={{ background: 'var(--accent-primary)', opacity: isGeneratingPDF ? 0.6 : 1 }}
+            >
+              <Download size={20} />
+              {isGeneratingPDF ? 'Generating PDF...' : 'Download PDF'}
+            </button>
+          </div>
+        </section>
+      )}
 
       <AnimatePresence>
         {isAnalyzing && <LoadingPanel currentImage={currentAnalyzingImage} />}
