@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 interface ReportQAProps {
   report: any;
@@ -15,6 +15,11 @@ export function ReportQA({ report }: ReportQAProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [history, setHistory] = useState<QAEntry[]>([]);
+  const historyEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    historyEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [history]);
 
   const SUGGESTED_QUESTIONS = [
     'Is this structurally dangerous?',
@@ -57,11 +62,11 @@ export function ReportQA({ report }: ReportQAProps) {
       if (data.error) {
         setError(data.error);
       } else {
-        setHistory(prev => [{
+        setHistory(prev => [...prev, {
           question: trimmed,
           answer: data.answer,
           timestamp: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
-        }, ...prev]);
+        }]);
         setQuestion('');
       }
     } catch (err) {
@@ -166,6 +171,7 @@ export function ReportQA({ report }: ReportQAProps) {
               </div>
             </div>
           ))}
+          <div ref={historyEndRef} />
         </div>
       )}
 
