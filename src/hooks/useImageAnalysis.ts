@@ -4,7 +4,6 @@ import { compressImage, generateRef, analyzeImage } from '../utils';
 
 export function useImageAnalysis() {
   const [images, setImages] = useState<ImageAnalysis[]>([]);
-  const [apiKey, setApiKey] = useState<string>('');
 
   const addImages = async (files: File[]) => {
     const newImages: ImageAnalysis[] = [];
@@ -30,10 +29,6 @@ export function useImageAnalysis() {
   };
 
   const analyzeImageById = async (id: string, context: PropertyContext) => {
-    if (!apiKey) {
-      throw new Error('API key not configured');
-    }
-
     setImages((prev) =>
       prev.map((img) =>
         img.id === id ? { ...img, isAnalyzing: true, error: undefined } : img
@@ -45,7 +40,7 @@ export function useImageAnalysis() {
       if (!image) throw new Error('Image not found');
 
       const base64 = await compressImage(image.file);
-      const report = await analyzeImage(base64, context, apiKey);
+      const report = await analyzeImage(base64, context);
 
       setImages((prev) =>
         prev.map((img) =>
@@ -82,8 +77,6 @@ export function useImageAnalysis() {
 
   return {
     images,
-    apiKey,
-    setApiKey,
     addImages,
     removeImage,
     analyzeImageById,

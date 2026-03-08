@@ -11,8 +11,6 @@ import { PropertyContext } from './types';
 function App() {
   const {
     images,
-    apiKey,
-    setApiKey,
     addImages,
     removeImage,
     analyzeAllImages,
@@ -39,7 +37,7 @@ function App() {
       }, 500);
     } catch (error) {
       console.error('Analysis error:', error);
-      alert('Analysis failed. Please check your API key and try again.');
+      alert('Analysis failed. Please try again.');
     } finally {
       setIsAnalyzing(false);
       setCurrentAnalyzingImage(undefined);
@@ -55,8 +53,6 @@ function App() {
         onRemoveImage={removeImage}
         onAnalyze={handleAnalyze}
         isAnalyzing={isAnalyzing}
-        apiKey={apiKey}
-        onApiKeyChange={setApiKey}
       />
       <ReportSection images={images} />
       <ComparisonDashboard images={images} />

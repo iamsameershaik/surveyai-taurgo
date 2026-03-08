@@ -1,6 +1,6 @@
 import { useState, useRef, DragEvent, ChangeEvent } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, X, ChevronDown, Search, Key } from 'lucide-react';
+import { Upload, X, ChevronDown, Search } from 'lucide-react';
 import { ImageAnalysis, PropertyContext } from '../types';
 
 interface UploadSectionProps {
@@ -9,8 +9,6 @@ interface UploadSectionProps {
   onRemoveImage: (id: string) => void;
   onAnalyze: (context: PropertyContext) => void;
   isAnalyzing: boolean;
-  apiKey: string;
-  onApiKeyChange: (key: string) => void;
 }
 
 export function UploadSection({
@@ -19,12 +17,9 @@ export function UploadSection({
   onRemoveImage,
   onAnalyze,
   isAnalyzing,
-  apiKey,
-  onApiKeyChange,
 }: UploadSectionProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [showContext, setShowContext] = useState(false);
-  const [showApiKey, setShowApiKey] = useState(!apiKey);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [context, setContext] = useState<PropertyContext>({
@@ -71,10 +66,6 @@ export function UploadSection({
   };
 
   const handleAnalyzeClick = () => {
-    if (!apiKey) {
-      setShowApiKey(true);
-      return;
-    }
     onAnalyze(context);
   };
 
@@ -102,41 +93,6 @@ export function UploadSection({
             Drop your images below or click to browse. Up to 5 images supported.
           </p>
 
-          {showApiKey && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              className="glass-panel p-6 mb-6"
-            >
-              <div className="flex items-start gap-3">
-                <Key size={20} className="mt-1" style={{ color: 'var(--accent-gold)' }} />
-                <div className="flex-1">
-                  <h3 className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
-                    Anthropic API Key Required
-                  </h3>
-                  <p className="text-sm mb-3" style={{ color: 'var(--text-secondary)' }}>
-                    Enter your Anthropic API key to enable AI analysis. Get one at{' '}
-                    <a
-                      href="https://console.anthropic.com/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="underline"
-                      style={{ color: 'var(--accent-secondary)' }}
-                    >
-                      console.anthropic.com
-                    </a>
-                  </p>
-                  <input
-                    type="password"
-                    value={apiKey}
-                    onChange={(e) => onApiKeyChange(e.target.value)}
-                    placeholder="sk-ant-..."
-                    className="neu-input w-full"
-                  />
-                </div>
-              </div>
-            </motion.div>
-          )}
 
           <div
             className={`glass-panel p-8 mb-6 cursor-pointer transition-all ${

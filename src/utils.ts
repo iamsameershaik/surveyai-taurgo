@@ -104,44 +104,28 @@ Be technically precise. Use proper surveying terminology. Cost estimates should 
 
 export async function analyzeImage(
   base64Image: string,
-  context: PropertyContext,
-  apiKey: string
+  context: PropertyContext
 ): Promise<AnalysisReport> {
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
+  const response = await fetch('/.netlify/functions/analyse', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 2000,
-      messages: [
-        {
-          role: 'user',
-          content: [
-            {
-              type: 'image',
-              source: {
-                type: 'base64',
-                media_type: 'image/jpeg',
-                data: base64Image,
-              },
-            },
-            {
-              type: 'text',
-              text: buildPrompt(context),
-            },
-          ],
-        },
-      ],
+      imageBase64: base64Image,
+      mediaType: 'image/jpeg',
+      context: {
+        propertyType: context.propertyType || '',
+        buildingAge: context.buildingAge || '',
+        locationType: context.locationType || '',
+        reportPurpose: context.reportPurpose || '',
+      },
     }),
   });
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.error?.message || 'API request failed');
+    throw new Error(error.error || 'API request failed');
   }
 
   const data = await response.json();
