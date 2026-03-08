@@ -5,6 +5,7 @@ import { UploadSection } from './components/UploadSection';
 import { LoadingPanel } from './components/LoadingPanel';
 import { ReportSection } from './components/ReportSection';
 import { ComparisonDashboard } from './components/ComparisonDashboard';
+import { ReportHistory } from './components/ReportHistory';
 import { useImageAnalysis } from './hooks/useImageAnalysis';
 import { PropertyContext } from './types';
 import { Download } from 'lucide-react';
@@ -123,6 +124,8 @@ END OF REPORT
         onAnalyze={handleAnalyze}
         isAnalyzing={isAnalyzing}
       />
+
+      <ReportHistory images={images} />
 
       <div className="report-printable-area">
         <ReportSection images={images} />

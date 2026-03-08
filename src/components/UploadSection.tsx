@@ -107,7 +107,7 @@ export function UploadSection({
               ref={fileInputRef}
               type="file"
               multiple
-              accept="image/*"
+              accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
               onChange={handleFileInput}
               className="hidden"
             />

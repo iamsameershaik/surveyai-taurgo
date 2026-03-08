@@ -118,8 +118,20 @@ Return this exact structure:
       "timeframe": "e.g. Within 1 month"
     }
   ],
-  "location_context_notes": "Any specific notes given the property context provided"
+  "location_context_notes": "Any specific notes given the property context provided",
+  "defect_zones": [
+    {
+      "defect_name": "name matching a defect_category",
+      "x_percent": number,
+      "y_percent": number,
+      "w_percent": number,
+      "h_percent": number,
+      "color": "#hexcode"
+    }
+  ]
 }
+
+"defect_zones": Estimate approximate bounding boxes for each visible defect area. Use percentage coordinates relative to the full image dimensions (0-100). Be as accurate as possible based on the visible damage in the image. Each zone should correspond to a named defect in defect_categories, and use the appropriate severity color for that defect (#dc2626 for Critical, #ea580c for High, #d97706 for Medium, #16a34a for Low, #2563eb for Monitor).
 
 Be technically precise. Use proper RICS surveying terminology. Cost estimates must reflect 2025 UK market rates.`;
 }

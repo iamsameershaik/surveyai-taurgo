@@ -1,6 +1,7 @@
 import { PropertyContext, AnalysisReport } from './types';
+import heic2any from 'heic2any';
 
-export async function compressImage(file: File, maxWidth = 1200): Promise<string> {
+async function compressAndEncode(file: File, maxWidth = 1200): Promise<string> {
   return new Promise((resolve, reject) => {
     const canvas = document.createElement('canvas');
     const img = new Image();
@@ -42,6 +43,37 @@ export async function compressImage(file: File, maxWidth = 1200): Promise<string
     img.onerror = () => reject(new Error('Failed to load image'));
     img.src = URL.createObjectURL(file);
   });
+}
+
+export async function compressImage(file: File, maxWidth = 1200): Promise<string> {
+  let processedFile = file;
+
+  const isHeic =
+    file.type === 'image/heic' ||
+    file.type === 'image/heif' ||
+    file.name.toLowerCase().endsWith('.heic') ||
+    file.name.toLowerCase().endsWith('.heif');
+
+  if (isHeic) {
+    try {
+      const convertedBlob = (await heic2any({
+        blob: file,
+        toType: 'image/jpeg',
+        quality: 0.85,
+      })) as Blob;
+
+      processedFile = new File([convertedBlob], file.name.replace(/\.heic$/i, '.jpg'), {
+        type: 'image/jpeg',
+      });
+    } catch (err) {
+      console.error('HEIC conversion failed:', err);
+      throw new Error(
+        'Could not convert HEIC image. Please try exporting as JPG from your Photos app.'
+      );
+    }
+  }
+
+  return compressAndEncode(processedFile, maxWidth);
 }
 
 export function generateRef(): string {

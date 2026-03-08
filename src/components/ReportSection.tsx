@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Copy, Calendar } from 'lucide-react';
+import { Copy, Calendar, Eye, EyeOff } from 'lucide-react';
 import { ImageAnalysis } from '../types';
 import { SeverityGauge } from './SeverityGauge';
+import { DefectHighlightViewer } from './DefectHighlightViewer';
 import { buildReportText, getSeverityClass } from '../utils';
 
 interface ReportSectionProps {
@@ -10,6 +12,7 @@ interface ReportSectionProps {
 
 export function ReportSection({ images }: ReportSectionProps) {
   const analyzedImages = images.filter((img) => img.report);
+  const [overlayStates, setOverlayStates] = useState<{ [key: string]: boolean }>({});
 
   if (analyzedImages.length === 0) return null;
 
@@ -18,6 +21,17 @@ export function ReportSection({ images }: ReportSectionProps) {
     const text = buildReportText(image.report, image.reference);
     navigator.clipboard.writeText(text);
     alert('Report copied to clipboard!');
+  };
+
+  const toggleOverlay = (imageId: string) => {
+    setOverlayStates((prev) => ({
+      ...prev,
+      [imageId]: prev[imageId] === undefined ? false : !prev[imageId],
+    }));
+  };
+
+  const getOverlayState = (imageId: string) => {
+    return overlayStates[imageId] === undefined ? true : overlayStates[imageId];
   };
 
   return (
@@ -44,14 +58,9 @@ export function ReportSection({ images }: ReportSectionProps) {
               className="glass-panel p-6 md:p-8"
               id={`report-${image.id}`}
             >
-              <div className="flex flex-col md:flex-row items-start gap-4 mb-6 pb-6 border-b border-white/40">
-                <img
-                  src={image.dataUrl}
-                  alt="Property"
-                  className="w-20 h-20 rounded-lg object-cover neu-card"
-                />
-                <div className="flex-1">
-                  <div className="flex flex-wrap items-center gap-3 mb-2">
+              <div className="mb-6">
+                <div className="flex flex-col gap-3 mb-3">
+                  <div className="flex flex-wrap items-center gap-3">
                     <span
                       className="mono text-sm font-semibold"
                       style={{ color: 'var(--accent-secondary)' }}
@@ -69,6 +78,33 @@ export function ReportSection({ images }: ReportSectionProps) {
                       })}
                     </span>
                   </div>
+                  {image.report?.defect_zones && image.report.defect_zones.length > 0 && (
+                    <button
+                      onClick={() => toggleOverlay(image.id)}
+                      className="neu-button px-4 py-2 text-xs font-medium inline-flex items-center gap-2 self-start"
+                      style={{ color: 'var(--text-primary)' }}
+                    >
+                      {getOverlayState(image.id) ? (
+                        <>
+                          <EyeOff size={14} />
+                          Hide Overlay
+                        </>
+                      ) : (
+                        <>
+                          <Eye size={14} />
+                          Show Defect Zones
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
+
+                <div className="w-full max-w-md mx-auto mb-6">
+                  <DefectHighlightViewer
+                    imageSrc={image.dataUrl}
+                    defectZones={image.report?.defect_zones || []}
+                    showOverlay={getOverlayState(image.id)}
+                  />
                 </div>
               </div>
 

@@ -190,6 +190,18 @@ code, pre, .mono {
   animation: pulse-glow 2s ease-in-out infinite;
 }
 
+@keyframes pulse-highlight {
+  0% {
+    box-shadow: 0 0 0 0 var(--accent-secondary);
+  }
+  50% {
+    box-shadow: 0 0 30px 10px rgba(37, 99, 235, 0.5);
+  }
+  100% {
+    box-shadow: 0 0 0 0 var(--accent-secondary);
+  }
+}
+
 @keyframes spin {
   to { transform: rotate(360deg); }
 }

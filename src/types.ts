@@ -28,6 +28,15 @@ export interface Recommendation {
   timeframe: string;
 }
 
+export interface DefectZone {
+  defect_name: string;
+  x_percent: number;
+  y_percent: number;
+  w_percent: number;
+  h_percent: number;
+  color: string;
+}
+
 export interface AnalysisReport {
   severity: SeverityLevel;
   severity_score: number;
@@ -38,6 +47,7 @@ export interface AnalysisReport {
   cost_estimate: CostEstimate;
   recommendations: Recommendation[];
   location_context_notes?: string;
+  defect_zones?: DefectZone[];
 }
 
 export interface PropertyContext {
