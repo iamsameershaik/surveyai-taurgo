@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { HeroSection } from './components/HeroSection';
 import { UploadSection } from './components/UploadSection';
-import { LoadingPanel } from './components/LoadingPanel';
+import { AnalysisProgressModal } from './components/AnalysisProgressModal';
 import { ReportSection } from './components/ReportSection';
 import { ComparisonDashboard } from './components/ComparisonDashboard';
 import { ReportHistory } from './components/ReportHistory';
@@ -14,13 +14,13 @@ import { generatePDF } from './utils/generatePDF';
 function App() {
   const {
     images,
+    analysisProgress,
     addImages,
     removeImage,
     analyzeAllImages,
   } = useImageAnalysis();
 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [currentAnalyzingImage, setCurrentAnalyzingImage] = useState<string | undefined>();
   const [copyButtonLabel, setCopyButtonLabel] = useState('📋 Copy Entire Report');
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [surveyContext, setSurveyContext] = useState<PropertyContext>({
@@ -37,10 +37,6 @@ function App() {
   const handleAnalyze = async (context: PropertyContext) => {
     setSurveyContext(context);
     setIsAnalyzing(true);
-    const unanalyzedImages = images.filter((img) => !img.report && !img.error);
-    if (unanalyzedImages.length > 0) {
-      setCurrentAnalyzingImage(unanalyzedImages[0].dataUrl);
-    }
 
     try {
       await analyzeAllImages(context);
@@ -52,7 +48,6 @@ function App() {
       alert('Analysis failed. Please try again.');
     } finally {
       setIsAnalyzing(false);
-      setCurrentAnalyzingImage(undefined);
     }
   };
 
@@ -186,9 +181,9 @@ END OF REPORT
         </section>
       )}
 
-      <AnimatePresence>
-        {isAnalyzing && <LoadingPanel currentImage={currentAnalyzingImage} />}
-      </AnimatePresence>
+      {isAnalyzing && analysisProgress.length > 0 && (
+        <AnalysisProgressModal progress={analysisProgress} />
+      )}
 
       <footer className="py-8 text-center" style={{ color: 'var(--text-muted)' }}>
         <div className="glass-panel-sm inline-block px-6 py-3">

@@ -185,7 +185,7 @@ IMPORTANT CONSTRAINTS — READ BEFORE RESPONDING:
 
 2. IMAGE QUALITY CHECK: If the image is too blurry, too dark, too small, or does not clearly show a building/property element, set "image_quality" to "insufficient" and populate the report with conservative placeholder values. Do not fabricate defects from a poor image.
 
-3. CONFIDENCE DISCIPLINE: Only assign confidence scores above 80% when the defect is unambiguously visible. Assign 60–79% for probable but partially obscured defects. Assign below 60% for possible but uncertain observations. Never assign 100% confidence.
+3. CONFIDENCE DISCIPLINE: Only assign confidence scores above 80% when the defect is unambiguously visible. Assign 60–79% for probable but partially obscured defects. Assign below 60% for possible but uncertain observations. Never assign 100% confidence. A confidence score reflects how certain you are that what you see IS a defect, not how clearly you can see the image. If the element appears normal and functional, confidence in any "defect" finding should be below 50% — at which point you should not report it as a defect at all.
 
 4. COST ESTIMATES: Base all cost estimates on published 2025 UK market rates from RICS Building Cost Information Service (BCIS) benchmarks. Do not invent figures. Use conservative ranges. If insufficient visual information exists to estimate cost, return null for cost fields.
 
@@ -200,6 +200,19 @@ PROPERTY CONTEXT:
 - Report Purpose: ${context.reportPurpose || 'General Inspection'}
 
 Analyse this property image and return ONLY a valid JSON object. No markdown, no backticks, no explanation. Raw JSON only.
+
+CRITICAL — HONESTY OVER OUTPUT:
+Your job is not to always find defects. If the image shows a property element in satisfactory or good condition, you MUST return severity "Monitor" with a survey_description that clearly states the element appears in satisfactory condition and no immediate remedial action is required. Do NOT invent minor defects to justify your output. Do NOT report on features that are functioning normally (e.g. a door closer that is visibly operating correctly is NOT a defect). Do NOT classify standard building features as defects simply because they are present.
+
+A defect only qualifies for reporting if there is VISIBLE evidence of deterioration, damage, moisture, failure, or safety risk. If no such evidence exists, return:
+- severity: "Monitor"
+- severity_score: 5-15
+- defect_categories: one entry named "No Significant Defects Identified" with confidence 95, severity "Monitor"
+- survey_description: a brief RICS-standard note confirming the element appears in satisfactory condition
+- recommendations: one P3 entry recommending routine monitoring only
+- cost_estimate: null
+
+Never fabricate defects. If uncertain whether something is a defect, err toward "Monitor" and note the uncertainty in analysis_limitations.
 
 DEFECT TAXONOMY REFERENCE — use this classification system for all defect_categories:
 

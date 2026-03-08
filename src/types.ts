@@ -80,3 +80,11 @@ export interface ImageAnalysis {
   isLoadingThumbnail?: boolean;
   error?: string;
 }
+
+export interface ImageProgress {
+  fileName: string;
+  previewUrl: string;
+  stage: 'queued' | 'preprocessing' | 'classifying' | 'generating' | 'scoring' | 'complete' | 'error';
+  index: number;
+  total: number;
+}
