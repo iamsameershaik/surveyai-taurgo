@@ -99,7 +99,7 @@ Return this exact structure:
       "severity": "Monitor" | "Low" | "Medium" | "High" | "Critical"
     }
   ],
-  "survey_description": "Professional 4-5 sentence RICS-standard description using proper surveying terminology.",
+  "survey_description": "Formal RICS HomeBuyer Report / Level 2 Survey style description conforming to UK RICS surveying standards.",
   "risk_matrix": {
     "likelihood": "Low" | "Medium" | "High",
     "impact": "Low" | "Medium" | "High"
@@ -132,6 +132,40 @@ Return this exact structure:
 }
 
 "defect_zones": Estimate approximate bounding boxes for each visible defect area. Use percentage coordinates relative to the full image dimensions (0-100). Be as accurate as possible based on the visible damage in the image. Each zone should correspond to a named defect in defect_categories, and use the appropriate severity color for that defect (#dc2626 for Critical, #ea580c for High, #d97706 for Medium, #16a34a for Low, #2563eb for Monitor).
+
+"survey_description": Write a formal RICS HomeBuyer Report / Level 2 Survey style description of the observed defect(s). The language must conform to UK RICS surveying standards and conventions. Follow these rules precisely:
+
+1. Use third-person passive voice throughout. Never use "I" or "we". Use constructions such as "Evidence of...", "Signs of... were observed", "The element appears to...", "It is considered that...", "Attention is drawn to...".
+
+2. Use RICS condition ratings where appropriate. Reference "Condition Rating 1 (no repair currently needed)", "Condition Rating 2 (defects that need repairing or replacing but are not considered serious)", or "Condition Rating 3 (defects that are serious and/or need to be repaired, replaced or investigated urgently)" as fits the severity.
+
+3. Use standard RICS terminology and phrasing conventions:
+   - "Evidence of penetrating/rising dampness was noted to..."
+   - "Cracking was observed to the [element], which is considered to be [superficial/structural/movement-related]..."
+   - "The [element] exhibited signs of [defect], which may be attributable to [cause]..."
+   - "Further investigation by a [specialist] is recommended prior to legal completion."
+   - "This matter should be referred to a [relevant specialist] for further assessment and remedial advice."
+   - "The defect is considered to be [minor/moderate/significant] and [does/does not] affect the structural integrity of the building."
+   - "It is recommended that the matter is investigated as a matter of [routine/urgency] by a suitably qualified contractor."
+
+4. Structure the description in this order:
+   - Sentence 1: What was observed and where (element/location)
+   - Sentence 2: Probable cause or contributing factors
+   - Sentence 3: Current condition and extent of the defect
+   - Sentence 4: Risk or implications if left unaddressed
+   - Sentence 5: Recommended course of action and specialist referral
+
+5. Use precise building surveying vocabulary:
+   - Refer to building elements correctly: "external render", "masonry substrate", "soffit", "fascia", "party wall", "damp-proof course (DPC)", "damp-proof membrane (DPM)", "joinery", "fenestration", "substructure", "superstructure", "roof covering", "rainwater goods", etc.
+   - Use "noted", "observed", "identified", "evident", "apparent" — not "found", "seen", or "spotted"
+   - Use "remedial works", not "repairs"
+   - Use "further investigation is warranted", not "you should check"
+   - Use "it is considered likely that", not "probably"
+   - Use "instructed", "appointed", or "engaged" when referring to specialists
+
+6. Do NOT use colloquial language, bullet points, first-person voice, or consumer-facing simplifications. The output must read as if written by a qualified RICS Chartered Surveyor for inclusion in a formal Level 2 HomeBuyer Report.
+
+The survey_description must be 4–5 sentences only.
 
 Be technically precise. Use proper RICS surveying terminology. Cost estimates must reflect 2025 UK market rates.`;
 }
