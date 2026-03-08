@@ -4,6 +4,7 @@ import { Copy, Calendar, Eye, EyeOff } from 'lucide-react';
 import { ImageAnalysis, Citation } from '../types';
 import { SeverityGauge } from './SeverityGauge';
 import { DefectHighlightViewer } from './DefectHighlightViewer';
+import { ReportQA } from './ReportQA';
 import { buildReportText, getSeverityClass } from '../utils';
 
 interface CitationsPanelProps {
@@ -393,6 +394,22 @@ export function ReportSection({ images }: ReportSectionProps) {
                   </div>
 
                   <CitationsPanel citations={image.report.citations || []} />
+
+                  <ReportQA
+                    report={{
+                      ref: image.reference,
+                      severity: image.report.severity,
+                      severityScore: image.report.severity_score,
+                      urgency: image.report.urgency,
+                      defectCategories: image.report.defect_categories,
+                      surveyDescription: image.report.survey_description,
+                      riskMatrix: image.report.risk_matrix,
+                      costEstimate: image.report.cost_estimate,
+                      recommendations: image.report.recommendations,
+                      locationContextNotes: image.report.location_context_notes,
+                      citations: image.report.citations,
+                    }}
+                  />
 
                   <div className="flex flex-wrap gap-3 no-print">
                     <button
