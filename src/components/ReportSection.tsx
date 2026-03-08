@@ -1,11 +1,95 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Copy, Calendar, Eye, EyeOff } from 'lucide-react';
-import { ImageAnalysis, Citation } from '../types';
+import { ImageAnalysis, Citation, DefectCategory } from '../types';
 import { SeverityGauge } from './SeverityGauge';
 import { DefectHighlightViewer } from './DefectHighlightViewer';
 import { ReportQA } from './ReportQA';
 import { buildReportText, getSeverityClass } from '../utils';
+
+const SEVERITY_COLORS = {
+  Monitor: { bg: 'rgba(37,99,235,0.08)', border: 'rgba(37,99,235,0.25)', text: '#1d4ed8' },
+  Low:     { bg: 'rgba(22,163,74,0.08)',  border: 'rgba(22,163,74,0.25)',  text: '#15803d' },
+  Medium:  { bg: 'rgba(217,119,6,0.08)',  border: 'rgba(217,119,6,0.25)',  text: '#b45309' },
+  High:    { bg: 'rgba(234,88,12,0.08)',  border: 'rgba(234,88,12,0.25)',  text: '#c2410c' },
+  Critical:{ bg: 'rgba(220,38,38,0.08)', border: 'rgba(220,38,38,0.25)', text: '#b91c1c' },
+};
+
+function DefectChip({ defect }: { defect: DefectCategory }) {
+  const colors = SEVERITY_COLORS[defect.severity] || SEVERITY_COLORS.Monitor;
+
+  return (
+    <div style={{
+      padding: '10px 14px',
+      background: colors.bg,
+      border: `1px solid ${colors.border}`,
+      borderRadius: '10px',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '4px',
+      minWidth: '160px',
+      flex: '1 1 160px',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <span style={{ fontSize: '18px' }}>{defect.icon}</span>
+        <span style={{ fontSize: '13px', fontWeight: '700', color: '#1a2035' }}>
+          {defect.name}
+        </span>
+      </div>
+
+      <div style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '4px',
+        width: 'fit-content',
+      }}>
+        <span style={{
+          fontSize: '9px',
+          fontWeight: '700',
+          letterSpacing: '1px',
+          textTransform: 'uppercase',
+          color: colors.text,
+          background: colors.bg,
+          border: `1px solid ${colors.border}`,
+          padding: '1px 6px',
+          borderRadius: '4px',
+        }}>
+          {defect.taxonomy_short}
+        </span>
+      </div>
+
+      <div style={{
+        fontSize: '11px',
+        color: '#6b7280',
+        fontStyle: 'italic',
+        lineHeight: '1.4',
+      }}>
+        {defect.taxonomy_long}
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
+        <div style={{
+          flex: 1,
+          height: '3px',
+          background: 'rgba(0,0,0,0.08)',
+          borderRadius: '2px',
+          overflow: 'hidden',
+        }}>
+          <div style={{
+            height: '100%',
+            width: `${defect.confidence}%`,
+            background: colors.text,
+            borderRadius: '2px',
+            transition: 'width 0.8s ease',
+          }} />
+        </div>
+        <span style={{ fontSize: '10px', color: colors.text, fontWeight: '600', whiteSpace: 'nowrap' }}>
+          {defect.confidence}%
+        </span>
+      </div>
+    </div>
+  );
+}
 
 interface CitationsPanelProps {
   citations: Citation[];
@@ -251,7 +335,7 @@ export function ReportSection({ images }: ReportSectionProps) {
                     urgency={image.report.urgency}
                   />
 
-                  <div className="flex flex-wrap gap-2 mb-8 justify-center">
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '32px' }}>
                     {image.report.defect_categories.map((defect, i) => (
                       <motion.div
                         key={i}
@@ -259,19 +343,9 @@ export function ReportSection({ images }: ReportSectionProps) {
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: i * 0.05 }}
-                        className={`glass-panel-sm px-4 py-2 flex items-center gap-2 border-2 ${getSeverityClass(
-                          defect.severity
-                        )}`}
+                        style={{ display: 'contents' }}
                       >
-                        <span className="text-lg">{defect.icon}</span>
-                        <div className="text-left">
-                          <div className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
-                            {defect.name}
-                          </div>
-                          <div className="text-xs mono" style={{ color: 'var(--text-muted)' }}>
-                            {defect.confidence}% confidence
-                          </div>
-                        </div>
+                        <DefectChip defect={defect} />
                       </motion.div>
                     ))}
                   </div>

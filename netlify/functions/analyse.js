@@ -201,6 +201,73 @@ PROPERTY CONTEXT:
 
 Analyse this property image and return ONLY a valid JSON object. No markdown, no backticks, no explanation. Raw JSON only.
 
+DEFECT TAXONOMY REFERENCE — use this classification system for all defect_categories:
+
+TIER 1 (taxonomy_short) → TIER 2 examples (taxonomy_long):
+
+MOISTURE DEFECT
+  → Rising Damp
+  → Penetrating Damp (Lateral Ingress)
+  → Penetrating Damp (Roof Ingress)
+  → Condensation (Surface)
+  → Condensation (Interstitial)
+  → Plumbing Leak (Internal)
+  → Hygroscopic Salt Contamination
+
+STRUCTURAL DEFECT
+  → Subsidence Cracking (Diagonal)
+  → Settlement Cracking (Vertical)
+  → Thermal Movement Cracking (Horizontal)
+  → Structural Wall Failure
+  → Foundation Movement
+  → Lintel Failure
+  → Cavity Wall Tie Failure
+
+MATERIAL DEGRADATION
+  → Spalling Brickwork
+  → Render Failure (Detachment)
+  → Render Failure (Cracking/Crazing)
+  → Mortar Joint Erosion
+  → Stone Decay (Weathering)
+  → Concrete Carbonation
+  → Efflorescence
+
+ROOF DEFECT
+  → Tile/Slate Displacement
+  → Tile/Slate Cracking or Breakage
+  → Flat Roof Membrane Failure
+  → Flashing Failure
+  → Ridge/Hip Defect
+  → Gutter Failure
+  → Fascia/Soffit Decay
+
+TIMBER DEFECT
+  → Wet Rot (Fungal Decay)
+  → Dry Rot (Serpula Lacrymans)
+  → Woodworm (Insect Infestation)
+  → Structural Timber Deflection
+  → Window/Door Joinery Failure
+
+BIOLOGICAL GROWTH
+  → Mould Growth (Black Mould)
+  → Algae Growth
+  → Lichen Growth
+  → Moss Growth
+  → Vegetation Root Penetration
+
+SERVICES DEFECT
+  → Drainage Failure
+  → Rainwater Goods Failure
+  → Electrical Installation Concern
+  → Plumbing/Heating System Concern
+
+FIRE & SAFETY
+  → Fire Stopping Breach
+  → Unsafe Structure
+  → Asbestos Containing Material (Suspected)
+
+Select the most precise taxonomy_long classification that matches the observed defect. If no exact match exists, use the closest Tier 1 category and describe the subtype accurately in taxonomy_long.
+
 Return this exact structure:
 {
   "image_quality": "sufficient" | "partial" | "insufficient",
@@ -211,10 +278,12 @@ Return this exact structure:
   "urgency": string (e.g. "Address within 3 months"),
   "defect_categories": [
     {
-      "name": "Defect type",
+      "name": "Human-readable defect name",
       "icon": "single relevant emoji",
       "confidence": number 0-100,
-      "severity": "Monitor" | "Low" | "Medium" | "High" | "Critical"
+      "severity": "Monitor" | "Low" | "Medium" | "High" | "Critical",
+      "taxonomy_short": "Tier 1 broad category (see taxonomy reference below)",
+      "taxonomy_long": "Tier 2 specific subtype (see taxonomy reference below)"
     }
   ],
   "survey_description": "Formal RICS HomeBuyer Report / Level 2 Survey style description conforming to UK RICS surveying standards.",

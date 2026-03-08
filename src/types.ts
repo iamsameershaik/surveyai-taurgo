@@ -7,6 +7,8 @@ export interface DefectCategory {
   icon: string;
   confidence: number;
   severity: SeverityLevel;
+  taxonomy_short: string;
+  taxonomy_long: string;
 }
 
 export interface RiskMatrix {
