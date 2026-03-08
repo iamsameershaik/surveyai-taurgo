@@ -37,6 +37,10 @@ The application follows a 4-step linear pipeline to move from a visual observati
 * Once processing is complete, scroll down to review the results.
 
 ### 3. View Report
+
+* **Overlay:** You can view the uploaded image with an overlay of the issues found to help spot 
+any mistakes made by the AI.
+
 The completed report provides a deep dive into three critical areas:
 *  **Risk:** Immediate threats to structural integrity or safety.
 *  **Cost to Repair:** A preliminary estimate for mitigation.
