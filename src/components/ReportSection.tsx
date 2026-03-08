@@ -226,6 +226,25 @@ export function ReportSection({ images }: ReportSectionProps) {
 
               {image.report && (
                 <>
+                  {image.report.analysis_limitations && (
+                    <div style={{
+                      padding: '10px 14px',
+                      background: 'rgba(245,158,11,0.08)',
+                      border: '1px solid rgba(245,158,11,0.25)',
+                      borderRadius: '8px',
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: '8px',
+                      marginBottom: '14px',
+                      fontSize: '12px',
+                      color: '#92400e',
+                      lineHeight: '1.5',
+                    }}>
+                      <span style={{ flexShrink: 0, marginTop: '1px' }}>⚠️</span>
+                      <span><strong>Analysis note:</strong> {image.report.analysis_limitations}</span>
+                    </div>
+                  )}
+
                   <SeverityGauge
                     severity={image.report.severity}
                     score={image.report.severity_score}

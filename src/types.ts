@@ -44,6 +44,9 @@ export interface DefectZone {
 }
 
 export interface AnalysisReport {
+  image_quality?: 'sufficient' | 'partial' | 'insufficient';
+  confidence_overall?: number;
+  analysis_limitations?: string | null;
   severity: SeverityLevel;
   severity_score: number;
   urgency: string;
