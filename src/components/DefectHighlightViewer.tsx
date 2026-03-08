@@ -25,6 +25,17 @@ export function DefectHighlightViewer({
         src={imageSrc}
         alt="Property with defect zones"
         style={{ width: '100%', display: 'block', borderRadius: '12px' }}
+        onError={(e) => {
+          const target = e.target as HTMLImageElement;
+          target.style.display = 'none';
+          const placeholder = document.createElement('div');
+          placeholder.style.cssText =
+            'width:100%;height:200px;background:#f3f4f6;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:40px;';
+          placeholder.textContent = '🏠';
+          if (target.parentNode && !target.parentNode.querySelector('div')) {
+            target.parentNode.insertBefore(placeholder, target);
+          }
+        }}
       />
       {showOverlay &&
         defectZones &&

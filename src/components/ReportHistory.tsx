@@ -64,11 +64,24 @@ export function ReportHistory({ images }: ReportHistoryProps) {
                       className="flex-shrink-0 w-64 neu-card p-4 cursor-pointer hover:scale-105 transition-transform"
                     >
                       <div className="relative mb-3 rounded-lg overflow-hidden">
-                        <img
-                          src={image.dataUrl}
-                          alt={`Report ${index + 1}`}
-                          className="w-full h-40 object-cover"
-                        />
+                        {image.dataUrl ? (
+                          <img
+                            src={image.dataUrl}
+                            alt={`Report ${index + 1}`}
+                            className="w-full h-40 object-cover"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                            }}
+                          />
+                        ) : (
+                          <div
+                            className="w-full h-40 flex items-center justify-center text-4xl"
+                            style={{ background: '#f3f4f6' }}
+                          >
+                            🏠
+                          </div>
+                        )}
                         <div
                           className="absolute top-2 right-2 px-3 py-1 rounded-full text-xs font-bold text-white"
                           style={{

@@ -6,17 +6,6 @@ import heic2any from 'heic2any';
 export function useImageAnalysis() {
   const [images, setImages] = useState<ImageAnalysis[]>([]);
 
-  // Cleanup object URLs on unmount
-  useEffect(() => {
-    return () => {
-      images.forEach((img) => {
-        if (img.dataUrl) {
-          URL.revokeObjectURL(img.dataUrl);
-        }
-      });
-    };
-  }, [images]);
-
   const addImages = async (files: File[]) => {
     const newImages: ImageAnalysis[] = [];
 
@@ -84,7 +73,13 @@ export function useImageAnalysis() {
   };
 
   const removeImage = (id: string) => {
-    setImages((prev) => prev.filter((img) => img.id !== id));
+    setImages((prev) => {
+      const imageToRemove = prev.find((img) => img.id === id);
+      if (imageToRemove?.dataUrl) {
+        URL.revokeObjectURL(imageToRemove.dataUrl);
+      }
+      return prev.filter((img) => img.id !== id);
+    });
   };
 
   const analyzeImageById = async (id: string, context: PropertyContext) => {
@@ -131,6 +126,11 @@ export function useImageAnalysis() {
   };
 
   const clearAll = () => {
+    images.forEach((img) => {
+      if (img.dataUrl) {
+        URL.revokeObjectURL(img.dataUrl);
+      }
+    });
     setImages([]);
   };
 
