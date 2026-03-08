@@ -155,11 +155,26 @@ export function UploadSection({
                     transition={{ delay: index * 0.05 }}
                     className="relative neu-card overflow-hidden aspect-square"
                   >
-                    <img
-                      src={image.dataUrl}
-                      alt="Property"
-                      className="w-full h-full object-cover"
-                    />
+                    {image.isLoadingThumbnail ? (
+                      <div
+                        className="w-full h-full flex flex-col items-center justify-center gap-2"
+                        style={{ background: 'rgba(255,255,255,0.4)' }}
+                      >
+                        <div
+                          className="w-8 h-8 border-3 border-t-transparent rounded-full animate-spin"
+                          style={{ borderColor: 'var(--accent-primary)', borderTopColor: 'transparent' }}
+                        />
+                        <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                          Converting...
+                        </span>
+                      </div>
+                    ) : (
+                      <img
+                        src={image.dataUrl}
+                        alt="Property"
+                        className="w-full h-full object-cover"
+                      />
+                    )}
                     <button
                       onClick={() => onRemoveImage(image.id)}
                       className="absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center"

@@ -65,5 +65,6 @@ export interface ImageAnalysis {
   reference: string;
   timestamp: Date;
   isAnalyzing: boolean;
+  isLoadingThumbnail?: boolean;
   error?: string;
 }

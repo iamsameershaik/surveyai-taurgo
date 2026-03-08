@@ -1,24 +1,83 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ImageAnalysis, PropertyContext } from '../types';
 import { compressImage, generateRef, analyzeImage } from '../utils';
+import heic2any from 'heic2any';
 
 export function useImageAnalysis() {
   const [images, setImages] = useState<ImageAnalysis[]>([]);
+
+  // Cleanup object URLs on unmount
+  useEffect(() => {
+    return () => {
+      images.forEach((img) => {
+        if (img.dataUrl) {
+          URL.revokeObjectURL(img.dataUrl);
+        }
+      });
+    };
+  }, [images]);
 
   const addImages = async (files: File[]) => {
     const newImages: ImageAnalysis[] = [];
 
     for (const file of files) {
-      const dataUrl = URL.createObjectURL(file);
+      const id = Math.random().toString(36).substring(7);
+      const isHeic =
+        file.type === 'image/heic' ||
+        file.type === 'image/heif' ||
+        file.name.toLowerCase().endsWith('.heic') ||
+        file.name.toLowerCase().endsWith('.heif');
+
+      // Create placeholder with loading state for HEIC files
       const newImage: ImageAnalysis = {
-        id: Math.random().toString(36).substring(7),
+        id,
         file,
-        dataUrl,
+        dataUrl: '', // Will be set after conversion
         reference: generateRef(),
         timestamp: new Date(),
         isAnalyzing: false,
+        isLoadingThumbnail: isHeic,
       };
       newImages.push(newImage);
+
+      // Convert HEIC to JPEG for thumbnail preview
+      if (isHeic) {
+        (async () => {
+          try {
+            const convertedBlob = (await heic2any({
+              blob: file,
+              toType: 'image/jpeg',
+              quality: 0.85,
+            })) as Blob;
+
+            const dataUrl = URL.createObjectURL(convertedBlob);
+
+            setImages((prev) =>
+              prev.map((img) =>
+                img.id === id
+                  ? { ...img, dataUrl, isLoadingThumbnail: false }
+                  : img
+              )
+            );
+          } catch (err) {
+            console.error('HEIC thumbnail conversion failed:', err);
+            setImages((prev) =>
+              prev.map((img) =>
+                img.id === id
+                  ? {
+                      ...img,
+                      isLoadingThumbnail: false,
+                      error: 'Could not convert HEIC image',
+                    }
+                  : img
+              )
+            );
+          }
+        })();
+      } else {
+        // For non-HEIC files, create preview URL immediately
+        newImage.dataUrl = URL.createObjectURL(file);
+      }
     }
 
     setImages((prev) => [...prev, ...newImages]);
