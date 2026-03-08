@@ -1,168 +1,150 @@
-import { motion } from 'framer-motion';
-import { SeverityLevel } from '../types';
-import { getSeverityColor } from '../utils';
+import { useEffect, useRef } from 'react';
 
 interface SeverityGaugeProps {
-  severity: SeverityLevel;
+  severity: 'Monitor' | 'Low' | 'Medium' | 'High' | 'Critical';
   score: number;
   urgency: string;
 }
 
-export function SeverityGauge({ severity, score, urgency }: SeverityGaugeProps) {
-  const radius = 120;
-  const strokeWidth = 20;
-  const centerX = 150;
-  const centerY = 150;
+const SEVERITY_CONFIG = {
+  Monitor:  { angle: -90, color: '#2563eb', label: 'MONITOR RISK' },
+  Low:      { angle: -45, color: '#16a34a', label: 'LOW RISK' },
+  Medium:   { angle: 0,   color: '#d97706', label: 'MEDIUM RISK' },
+  High:     { angle: 45,  color: '#ea580c', label: 'HIGH RISK' },
+  Critical: { angle: 90,  color: '#dc2626', label: 'CRITICAL RISK' },
+};
 
-  const getSeverityAngle = (score: number) => {
-    return -90 + (score / 100) * 180;
-  };
+export function SeverityGauge({ severity, urgency }: SeverityGaugeProps) {
+  const needleRef = useRef<SVGLineElement>(null);
+  const config = SEVERITY_CONFIG[severity] || SEVERITY_CONFIG.Monitor;
 
-  const angle = getSeverityAngle(score);
+  const cx = 150;
+  const cy = 150;
+  const r = 100;
 
-  const needleLength = radius - strokeWidth / 2 - 10;
-  const needleX = centerX + needleLength * Math.cos((angle * Math.PI) / 180);
-  const needleY = centerY + needleLength * Math.sin((angle * Math.PI) / 180);
+  const targetSVGAngle = 90 - config.angle;
 
-  const createArc = (startAngle: number, endAngle: number) => {
-    const start = polarToCartesian(centerX, centerY, radius, endAngle);
-    const end = polarToCartesian(centerX, centerY, radius, startAngle);
-    const largeArcFlag = endAngle - startAngle <= 180 ? '0' : '1';
-    return `M ${start.x} ${start.y} A ${radius} ${radius} 0 ${largeArcFlag} 0 ${end.x} ${end.y}`;
-  };
+  const segments = [
+    { color: '#2563eb', startDeg: 180, endDeg: 144, label: 'MONITOR' },
+    { color: '#16a34a', startDeg: 144, endDeg: 108, label: 'LOW'     },
+    { color: '#d97706', startDeg: 108, endDeg: 72,  label: 'MEDIUM'  },
+    { color: '#ea580c', startDeg: 72,  endDeg: 36,  label: 'HIGH'    },
+    { color: '#dc2626', startDeg: 36,  endDeg: 0,   label: 'CRITICAL'},
+  ];
 
-  function polarToCartesian(
-    centerX: number,
-    centerY: number,
-    radius: number,
-    angleInDegrees: number
-  ) {
-    const angleInRadians = ((angleInDegrees - 90) * Math.PI) / 180;
+  function polarToXY(angleDeg: number, radius: number) {
+    const rad = (angleDeg * Math.PI) / 180;
     return {
-      x: centerX + radius * Math.cos(angleInRadians),
-      y: centerY + radius * Math.sin(angleInRadians),
+      x: cx + radius * Math.cos(rad),
+      y: cy - radius * Math.sin(rad),
     };
   }
 
-  const zones = [
-    { start: -90, end: -54, color: 'var(--severity-monitor)', label: 'Monitor' },
-    { start: -54, end: -18, color: 'var(--severity-low)', label: 'Low' },
-    { start: -18, end: 18, color: 'var(--severity-medium)', label: 'Medium' },
-    { start: 18, end: 54, color: 'var(--severity-high)', label: 'High' },
-    { start: 54, end: 90, color: 'var(--severity-critical)', label: 'Critical' },
-  ];
+  function describeArc(startDeg: number, endDeg: number, radius: number) {
+    const start = polarToXY(startDeg, radius);
+    const end = polarToXY(endDeg, radius);
+    return `M ${start.x} ${start.y} A ${radius} ${radius} 0 0 1 ${end.x} ${end.y}`;
+  }
+
+  const needleLength = 80;
+  const needleRad = (targetSVGAngle * Math.PI) / 180;
+  const needleX = cx + needleLength * Math.cos(needleRad);
+  const needleY = cy - needleLength * Math.sin(needleRad);
+
+  useEffect(() => {
+    if (!needleRef.current) return;
+    needleRef.current.style.transformOrigin = `${cx}px ${cy}px`;
+    needleRef.current.style.transform = `rotate(${270 - targetSVGAngle}deg)`;
+    needleRef.current.style.transition = 'none';
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (!needleRef.current) return;
+        needleRef.current.style.transition = 'transform 1.2s cubic-bezier(0.34, 1.56, 0.64, 1)';
+        needleRef.current.style.transform = 'rotate(0deg)';
+      });
+    });
+  }, [severity, targetSVGAngle]);
 
   return (
-    <div className="flex flex-col items-center py-8">
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
       <svg
-        width="300"
-        height="200"
-        viewBox="0 0 300 200"
-        className="mb-4"
+        viewBox="0 0 300 170"
+        style={{ width: '100%', maxWidth: '360px', overflow: 'visible' }}
       >
-        <defs>
-          <filter id="glow">
-            <feGaussianBlur stdDeviation="2" result="coloredBlur" />
-            <feMerge>
-              <feMergeNode in="coloredBlur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-        </defs>
-
-        {zones.map((zone, index) => (
-          <path
-            key={index}
-            d={createArc(zone.start, zone.end)}
-            fill="none"
-            stroke={zone.color}
-            strokeWidth={strokeWidth}
-            strokeLinecap="round"
-            opacity={0.3}
-          />
-        ))}
-
-        {zones.map((zone, index) => (
-          <motion.path
-            key={`active-${index}`}
-            d={createArc(zone.start, zone.end)}
-            fill="none"
-            stroke={zone.color}
-            strokeWidth={strokeWidth}
-            strokeLinecap="round"
-            initial={{ pathLength: 0 }}
-            animate={{
-              pathLength:
-                angle >= zone.start && angle <= zone.end
-                  ? (angle - zone.start) / (zone.end - zone.start)
-                  : angle > zone.end
-                  ? 1
-                  : 0,
-            }}
-            transition={{ duration: 1.5, ease: 'easeOut', delay: 0.2 }}
-          />
-        ))}
-
-        <motion.line
-          x1={centerX}
-          y1={centerY}
-          x2={needleX}
-          y2={needleY}
-          stroke={getSeverityColor(severity)}
-          strokeWidth={3}
+        <path
+          d={describeArc(180, 0, r)}
+          fill="none"
+          stroke="#e5e7eb"
+          strokeWidth="16"
           strokeLinecap="round"
-          initial={{ x2: centerX, y2: centerY - needleLength }}
-          animate={{ x2: needleX, y2: needleY }}
-          transition={{
-            type: 'spring',
-            stiffness: 50,
-            damping: 10,
-            delay: 0.5,
-          }}
-          filter="url(#glow)"
         />
 
-        <circle cx={centerX} cy={centerY} r={8} fill={getSeverityColor(severity)} />
+        {segments.map((seg, i) => (
+          <path
+            key={i}
+            d={describeArc(seg.startDeg, seg.endDeg, r)}
+            fill="none"
+            stroke={seg.color}
+            strokeWidth="16"
+            strokeLinecap="round"
+            opacity="0.9"
+          />
+        ))}
 
-        {zones.map((zone, index) => {
-          const labelAngle = (zone.start + zone.end) / 2;
-          const labelRadius = radius + 30;
-          const labelPos = polarToCartesian(centerX, centerY, labelRadius, labelAngle);
+        <line
+          ref={needleRef}
+          x1={cx}
+          y1={cy}
+          x2={needleX}
+          y2={needleY}
+          stroke={config.color}
+          strokeWidth="3"
+          strokeLinecap="round"
+        />
+
+        <circle cx={cx} cy={cy} r="7" fill={config.color} />
+        <circle cx={cx} cy={cy} r="3.5" fill="white" />
+
+        {[162, 126, 90, 54, 18].map((deg, i) => {
+          const pos = polarToXY(deg, r);
+          return <circle key={i} cx={pos.x} cy={pos.y} r="4" fill={segments[i].color} />;
+        })}
+
+        {segments.map((seg, i) => {
+          const midDeg = (seg.startDeg + seg.endDeg) / 2;
+          const pos = polarToXY(midDeg, r + 26);
           return (
             <text
-              key={`label-${index}`}
-              x={labelPos.x}
-              y={labelPos.y}
+              key={i}
+              x={pos.x}
+              y={pos.y}
               textAnchor="middle"
-              fontSize="11"
-              fontWeight="600"
-              fill={zone.color}
-              style={{ fontFamily: 'JetBrains Mono, monospace' }}
+              dominantBaseline="middle"
+              fontSize="8.5"
+              fontWeight="700"
+              letterSpacing="0.3"
+              fill={seg.color}
             >
-              {zone.label.toUpperCase()}
+              {seg.label}
             </text>
           );
         })}
       </svg>
 
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.8 }}
-        className="text-center"
-      >
-        <div
-          className="text-4xl font-bold mb-2"
-          style={{ color: getSeverityColor(severity) }}
-        >
-          {severity.toUpperCase()} RISK
-        </div>
-        <div className="glass-panel-sm inline-block px-6 py-2">
-          <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
-            {urgency}
-          </span>
-        </div>
-      </motion.div>
+      <div style={{
+        fontSize: '26px',
+        fontWeight: '800',
+        color: config.color,
+        letterSpacing: '-0.5px',
+      }}>
+        {config.label}
+      </div>
+
+      <div className="glass-panel-sm inline-block px-6 py-2">
+        <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+          {urgency}
+        </span>
+      </div>
     </div>
   );
 }

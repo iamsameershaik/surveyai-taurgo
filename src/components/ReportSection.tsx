@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Copy, Download, Share2, Calendar } from 'lucide-react';
+import { Copy, Calendar } from 'lucide-react';
 import { ImageAnalysis } from '../types';
 import { SeverityGauge } from './SeverityGauge';
 import { buildReportText, getSeverityClass } from '../utils';
@@ -18,16 +18,6 @@ export function ReportSection({ images }: ReportSectionProps) {
     const text = buildReportText(image.report, image.reference);
     navigator.clipboard.writeText(text);
     alert('Report copied to clipboard!');
-  };
-
-  const downloadPDF = () => {
-    window.print();
-  };
-
-  const shareReport = (image: ImageAnalysis) => {
-    const url = `${window.location.origin}?ref=${image.reference}`;
-    navigator.clipboard.writeText(url);
-    alert('Share link copied to clipboard!');
   };
 
   return (
@@ -259,22 +249,6 @@ export function ReportSection({ images }: ReportSectionProps) {
                     >
                       <Copy size={18} />
                       Copy Report
-                    </button>
-                    <button
-                      onClick={downloadPDF}
-                      className="neu-button px-6 py-3 font-medium inline-flex items-center gap-2"
-                      style={{ color: 'var(--text-primary)' }}
-                    >
-                      <Download size={18} />
-                      Download PDF
-                    </button>
-                    <button
-                      onClick={() => shareReport(image)}
-                      className="neu-button px-6 py-3 font-medium inline-flex items-center gap-2"
-                      style={{ color: 'var(--text-primary)' }}
-                    >
-                      <Share2 size={18} />
-                      Share Link
                     </button>
                   </div>
                 </>

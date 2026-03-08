@@ -72,7 +72,7 @@ export function UploadSection({
   const unanalyzedCount = images.filter((img) => !img.report && !img.error).length;
 
   return (
-    <section id="upload" className="min-h-screen py-16 px-4">
+    <section id="upload" className="py-16 px-4">
       <div className="max-w-4xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
