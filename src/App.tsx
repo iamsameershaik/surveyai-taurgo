@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, Component } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { HeroSection } from './components/HeroSection';
 import { UploadSection } from './components/UploadSection';
@@ -10,6 +10,45 @@ import { useImageAnalysis } from './hooks/useImageAnalysis';
 import { PropertyContext } from './types';
 import { Download } from 'lucide-react';
 import { generatePDF } from './utils/generatePDF';
+
+class ReportErrorBoundary extends Component<
+  { children: React.ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error) {
+    console.error('Report card render error:', error);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{
+          padding: '24px',
+          background: '#fef2f2',
+          border: '1px solid #fecaca',
+          borderRadius: '16px',
+          textAlign: 'center',
+          color: '#dc2626',
+        }}>
+          <p style={{ fontWeight: '600', marginBottom: '4px' }}>Report could not be displayed</p>
+          <p style={{ fontSize: '13px', color: '#9ca3af' }}>
+            The image may not have processed correctly. Please try uploading again.
+          </p>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 function App() {
   const {
@@ -155,7 +194,9 @@ END OF REPORT
 
       <ReportHistory images={images} />
 
-      <ReportSection images={images} />
+      <ReportErrorBoundary>
+        <ReportSection images={images} />
+      </ReportErrorBoundary>
       <ComparisonDashboard images={images} />
 
       {analyzedImages.length > 0 && (

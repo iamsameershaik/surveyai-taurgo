@@ -3,6 +3,15 @@ import { ImageAnalysis, PropertyContext, ImageProgress } from '../types';
 import { compressImage, generateRef, analyzeImage } from '../utils';
 import heic2any from 'heic2any';
 
+function blobToDataURL(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(new Error('Failed to convert blob to data URL'));
+    reader.readAsDataURL(blob);
+  });
+}
+
 export function useImageAnalysis() {
   const [images, setImages] = useState<ImageAnalysis[]>([]);
   const progressRef = useRef<ImageProgress[]>([]);
@@ -42,13 +51,15 @@ export function useImageAnalysis() {
       if (isHeic) {
         (async () => {
           try {
-            const convertedBlob = (await heic2any({
+            const convertedBlob = await heic2any({
               blob: file,
               toType: 'image/jpeg',
               quality: 0.85,
-            })) as Blob;
+            });
 
-            const dataUrl = URL.createObjectURL(convertedBlob);
+            const blob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
+
+            const dataUrl = await blobToDataURL(blob);
 
             setImages((prev) =>
               prev.map((img) =>
@@ -82,13 +93,7 @@ export function useImageAnalysis() {
   };
 
   const removeImage = (id: string) => {
-    setImages((prev) => {
-      const imageToRemove = prev.find((img) => img.id === id);
-      if (imageToRemove?.dataUrl) {
-        URL.revokeObjectURL(imageToRemove.dataUrl);
-      }
-      return prev.filter((img) => img.id !== id);
-    });
+    setImages((prev) => prev.filter((img) => img.id !== id));
   };
 
   const analyzeImageById = async (id: string, context: PropertyContext, index: number) => {
@@ -177,11 +182,6 @@ export function useImageAnalysis() {
   };
 
   const clearAll = () => {
-    images.forEach((img) => {
-      if (img.dataUrl) {
-        URL.revokeObjectURL(img.dataUrl);
-      }
-    });
     setImages([]);
   };
 
