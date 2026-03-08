@@ -23,9 +23,11 @@ const STAGE_LABELS: Record<string, string> = {
 const STAGE_ORDER = ['queued', 'preprocessing', 'classifying', 'generating', 'scoring', 'complete'];
 
 export function AnalysisProgressModal({ progress }: Props) {
+  if (!progress || progress.length === 0) return null;
+
   const completed = progress.filter(p => p.stage === 'complete').length;
   const total = progress.length;
-  const overallPct = Math.round((completed / total) * 100);
+  const overallPct = total > 0 ? Math.round((completed / total) * 100) : 0;
 
   return (
     <div style={{

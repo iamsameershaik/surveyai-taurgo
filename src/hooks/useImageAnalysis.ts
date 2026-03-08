@@ -1,11 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { ImageAnalysis, PropertyContext, ImageProgress } from '../types';
 import { compressImage, generateRef, analyzeImage } from '../utils';
 import heic2any from 'heic2any';
 
 export function useImageAnalysis() {
   const [images, setImages] = useState<ImageAnalysis[]>([]);
-  const [analysisProgress, setAnalysisProgress] = useState<ImageProgress[]>([]);
+  const progressRef = useRef<ImageProgress[]>([]);
+  const [analysisProgressSnapshot, setAnalysisProgressSnapshot] = useState<ImageProgress[]>([]);
+
+  const updateStage = (index: number, stage: ImageProgress['stage']) => {
+    progressRef.current = progressRef.current.map((p, i) =>
+      i === index ? { ...p, stage } : p
+    );
+    setAnalysisProgressSnapshot([...progressRef.current]);
+  };
 
   const addImages = async (files: File[]) => {
     const newImages: ImageAnalysis[] = [];
@@ -94,27 +102,19 @@ export function useImageAnalysis() {
       const image = images.find((img) => img.id === id);
       if (!image) throw new Error('Image not found');
 
-      setAnalysisProgress(prev => prev.map((p, i) =>
-        i === index ? { ...p, stage: 'preprocessing' as const } : p
-      ));
+      updateStage(index, 'preprocessing');
 
       const base64 = await compressImage(image.file);
 
-      setAnalysisProgress(prev => prev.map((p, i) =>
-        i === index ? { ...p, stage: 'classifying' as const } : p
-      ));
+      updateStage(index, 'classifying');
 
       const report = await analyzeImage(base64, context);
 
-      setAnalysisProgress(prev => prev.map((p, i) =>
-        i === index ? { ...p, stage: 'generating' as const } : p
-      ));
+      updateStage(index, 'generating');
 
       await new Promise(resolve => setTimeout(resolve, 200));
 
-      setAnalysisProgress(prev => prev.map((p, i) =>
-        i === index ? { ...p, stage: 'scoring' as const } : p
-      ));
+      updateStage(index, 'scoring');
 
       await new Promise(resolve => setTimeout(resolve, 200));
 
@@ -124,9 +124,9 @@ export function useImageAnalysis() {
         )
       );
 
-      setAnalysisProgress(prev => prev.map((p, i) =>
-        i === index ? { ...p, stage: 'complete' as const } : p
-      ));
+      updateStage(index, 'complete');
+
+      return report;
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Analysis failed';
@@ -139,27 +139,29 @@ export function useImageAnalysis() {
         )
       );
 
-      setAnalysisProgress(prev => prev.map((p, i) =>
-        i === index ? { ...p, stage: 'error' as const } : p
-      ));
+      updateStage(index, 'error');
 
-      throw error;
+      return null;
     }
   };
 
   const analyzeAllImages = async (context: PropertyContext) => {
     const unanalyzedImages = images.filter((img) => !img.report && !img.error);
 
-    setAnalysisProgress(unanalyzedImages.map((img, i) => ({
+    const initial: ImageProgress[] = unanalyzedImages.map((img, i) => ({
       fileName: img.file.name,
       previewUrl: img.dataUrl,
       stage: 'queued' as const,
       index: i,
       total: unanalyzedImages.length,
-    })));
+    }));
+    progressRef.current = initial;
+    setAnalysisProgressSnapshot([...initial]);
+
+    const imagesToProcess = [...unanalyzedImages];
 
     const results = await Promise.all(
-      unanalyzedImages.map((image, index) =>
+      imagesToProcess.map((image, index) =>
         analyzeImageById(image.id, context, index)
           .catch(err => {
             console.error(`Failed to analyze ${image.file.name}:`, err);
@@ -168,7 +170,10 @@ export function useImageAnalysis() {
       )
     );
 
-    setAnalysisProgress([]);
+    setTimeout(() => {
+      progressRef.current = [];
+      setAnalysisProgressSnapshot([]);
+    }, 1200);
   };
 
   const clearAll = () => {
@@ -182,7 +187,7 @@ export function useImageAnalysis() {
 
   return {
     images,
-    analysisProgress,
+    analysisProgress: analysisProgressSnapshot,
     addImages,
     removeImage,
     analyzeImageById,
