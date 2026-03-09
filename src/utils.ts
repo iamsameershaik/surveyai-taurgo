@@ -249,3 +249,4 @@ export function getSeverityColor(severity: string): string {
 export function getSeverityClass(severity: string): string {
   return `severity-${severity.toLowerCase()}`;
 }
+ 
