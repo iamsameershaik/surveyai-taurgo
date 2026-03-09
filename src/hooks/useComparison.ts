@@ -16,6 +16,16 @@ export function useComparison(images: ImageAnalysis[]): ComparisonResult {
 
   const shouldShowComparison = analyzedImages.length >= 2;
 
+  const CLEAN_RESULT_NAMES = [
+    'no significant defects identified',
+    'no defects identified',
+    'no significant defects',
+    'satisfactory condition',
+  ];
+
+  const isCleanResult = (name: string) =>
+    CLEAN_RESULT_NAMES.includes(name.toLowerCase().trim());
+
   const defectFrequency = useMemo(() => {
     const frequency: { [key: string]: { [imageId: string]: number } } = {};
 
@@ -23,6 +33,7 @@ export function useComparison(images: ImageAnalysis[]): ComparisonResult {
       if (!image.report) return;
 
       image.report.defect_categories.forEach((defect) => {
+        if (isCleanResult(defect.name)) return;
         if (!frequency[defect.name]) {
           frequency[defect.name] = {};
         }
