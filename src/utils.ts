@@ -201,9 +201,9 @@ SURVEY DESCRIPTION:
 ${report.survey_description}
 
 INDICATIVE REPAIR COSTS:
-  Conservative: £${report.cost_estimate.low.toLocaleString()}
+${report.cost_estimate?.low != null ? `  Conservative: £${report.cost_estimate.low.toLocaleString()}
   Mid-range:    £${report.cost_estimate.mid.toLocaleString()}
-  Full scope:   £${report.cost_estimate.high.toLocaleString()}
+  Full scope:   £${report.cost_estimate.high.toLocaleString()}` : '  Insufficient data — specialist assessment required'}
 
 RECOMMENDED ACTIONS:
 ${report.recommendations.map((r) => `[${r.priority}] ${r.action}\n    Specialist: ${r.specialist} | Timeframe: ${r.timeframe}`).join('\n\n')}`;
