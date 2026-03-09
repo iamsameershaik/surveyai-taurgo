@@ -12,6 +12,30 @@ function blobToDataURL(blob: Blob): Promise<string> {
   });
 }
 
+// Generate a lightweight fingerprint from file metadata + first 8KB of content
+async function fingerprintFile(file: File, context: PropertyContext): Promise<string> {
+  const sample = file.slice(0, 8192);
+  const buf = await sample.arrayBuffer();
+  const bytes = new Uint8Array(buf);
+  let hash = 0;
+  for (let i = 0; i < bytes.length; i++) {
+    hash = (Math.imul(31, hash) + bytes[i]) | 0;
+  }
+  const contextKey = `${context.propertyType}|${context.buildingAge}|${context.locationType}|${context.reportPurpose}`;
+  return `surveyai_${file.size}_${hash}_${btoa(contextKey).slice(0, 12)}`;
+}
+
+function getCachedReport(key: string): import('../types').AnalysisReport | null {
+  try {
+    const raw = sessionStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
+function setCachedReport(key: string, report: import('../types').AnalysisReport): void {
+  try { sessionStorage.setItem(key, JSON.stringify(report)); } catch { /* quota */ }
+}
+
 // Compress a JPEG data URL to base64 via canvas — never receives a raw HEIC file
 function compressDataUrl(dataUrl: string, maxWidth = 1200): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -136,6 +160,17 @@ export function useImageAnalysis() {
 
       updateStage(index, 'preprocessing');
 
+      // Check cache first — same image + same context = same result
+      const cacheKey = await fingerprintFile(readyImage.file, context);
+      const cached = getCachedReport(cacheKey);
+      if (cached) {
+        setImagesSync((prev) =>
+          prev.map((img) => img.id === id ? { ...img, report: cached, isAnalyzing: false } : img)
+        );
+        updateStage(index, 'complete');
+        return cached;
+      }
+
       // Compress using data URL — no HEIC file ever touches the canvas
       const base64 = await compressDataUrl(image.dataUrl);
 
@@ -152,6 +187,9 @@ export function useImageAnalysis() {
       setImagesSync((prev) =>
         prev.map((img) => img.id === id ? { ...img, report, isAnalyzing: false } : img)
       );
+
+      // Cache result so re-uploads of the same image return consistent scores
+      setCachedReport(cacheKey, report);
 
       updateStage(index, 'complete');
       return report;
