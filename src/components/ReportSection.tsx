@@ -412,30 +412,38 @@ export function ReportSection({ images }: ReportSectionProps) {
                         Indicative Repair Cost
                       </h4>
                       <div className="space-y-2">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                            Low estimate:
-                          </span>
-                          <span className="mono font-semibold" style={{ color: 'var(--text-primary)' }}>
-                            £{image.report.cost_estimate.low.toLocaleString()}
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                            Mid estimate:
-                          </span>
-                          <span className="mono font-semibold text-lg" style={{ color: 'var(--accent-primary)' }}>
-                            £{image.report.cost_estimate.mid.toLocaleString()}
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                            High estimate:
-                          </span>
-                          <span className="mono font-semibold" style={{ color: 'var(--text-primary)' }}>
-                            £{image.report.cost_estimate.high.toLocaleString()}
-                          </span>
-                        </div>
+                        {image.report.cost_estimate?.low != null && image.report.cost_estimate?.mid != null && image.report.cost_estimate?.high != null ? (
+                          <>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                                Low estimate:
+                              </span>
+                              <span className="mono font-semibold" style={{ color: 'var(--text-primary)' }}>
+                                £{image.report.cost_estimate.low.toLocaleString()}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                                Mid estimate:
+                              </span>
+                              <span className="mono font-semibold text-lg" style={{ color: 'var(--accent-primary)' }}>
+                                £{image.report.cost_estimate.mid.toLocaleString()}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                                High estimate:
+                              </span>
+                              <span className="mono font-semibold" style={{ color: 'var(--text-primary)' }}>
+                                £{image.report.cost_estimate.high.toLocaleString()}
+                              </span>
+                            </div>
+                          </>
+                        ) : (
+                          <p className="text-sm" style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                            Insufficient data to estimate repair costs. Engage a specialist for assessment.
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
