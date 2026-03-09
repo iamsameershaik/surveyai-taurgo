@@ -161,7 +161,7 @@ export function useImageAnalysis() {
       updateStage(index, 'preprocessing');
 
       // Check cache first — same image + same context = same result
-      const cacheKey = await fingerprintFile(readyImage.file, context);
+      const cacheKey = await fingerprintFile(image.file, context);
       const cached = getCachedReport(cacheKey);
       if (cached) {
         setImagesSync((prev) =>
