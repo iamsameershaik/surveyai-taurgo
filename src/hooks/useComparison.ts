@@ -60,15 +60,41 @@ export function useComparison(images: ImageAnalysis[]): ComparisonResult {
     return { low, mid, high };
   }, [analyzedImages]);
 
+  const SEVERITY_WEIGHT: Record<string, number> = {
+    Critical: 1000,
+    High:     500,
+    Medium:   200,
+    Low:      50,
+    Monitor:  10,
+  };
+
   const mostUrgentIssue = useMemo(() => {
     let maxScore = 0;
     let mostUrgent: { defect: string; count: number } | null = null;
+
+    // Build a map of defect name -> highest severity seen across all images
+    const defectSeverity: Record<string, string> = {};
+    analyzedImages.forEach((image) => {
+      if (!image.report) return;
+      image.report.defect_categories.forEach((defect) => {
+        if (isCleanResult(defect.name)) return;
+        const current = defectSeverity[defect.name];
+        const currentWeight = SEVERITY_WEIGHT[current] ?? 0;
+        const newWeight = SEVERITY_WEIGHT[defect.severity] ?? 0;
+        if (newWeight > currentWeight) {
+          defectSeverity[defect.name] = defect.severity;
+        }
+      });
+    });
 
     Object.entries(defectFrequency).forEach(([defect, imageMap]) => {
       const count = Object.keys(imageMap).length;
       const avgConfidence =
         Object.values(imageMap).reduce((sum, conf) => sum + conf, 0) / count;
-      const score = count * avgConfidence;
+      const severityWeight = SEVERITY_WEIGHT[defectSeverity[defect]] ?? 10;
+      // Severity is the primary key — a single Critical always beats many Mediums.
+      // Count and confidence are tiebreakers only, kept well below the severity gap.
+      const score = severityWeight * 10000 + count * 100 + avgConfidence;
 
       if (score > maxScore) {
         maxScore = score;
@@ -77,7 +103,7 @@ export function useComparison(images: ImageAnalysis[]): ComparisonResult {
     });
 
     return mostUrgent;
-  }, [defectFrequency]);
+  }, [defectFrequency, analyzedImages]);
 
   return {
     analyzedImages,
