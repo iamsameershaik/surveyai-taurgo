@@ -39,7 +39,7 @@ export function useComparison(images: ImageAnalysis[]): ComparisonResult {
     let high = 0;
 
     analyzedImages.forEach((image) => {
-      if (image.report) {
+      if (image.report?.cost_estimate?.low != null) {
         low += image.report.cost_estimate.low;
         mid += image.report.cost_estimate.mid;
         high += image.report.cost_estimate.high;
