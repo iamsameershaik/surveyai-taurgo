@@ -57,7 +57,7 @@ export function AnalysisProgressModal({ progress }: Props) {
             🏠
           </div>
           <h2 style={{ fontSize: '18px', fontWeight: '700', color: '#1a2035', margin: 0 }}>
-            Analysing {total} {total === 1 ? 'Property' : 'Properties'}
+            Analysing {total} {total === 1 ? 'Image' : 'Images'}
           </h2>
           <p style={{ fontSize: '13px', color: '#9ca3af', marginTop: '4px' }}>
             {completed} of {total} complete
