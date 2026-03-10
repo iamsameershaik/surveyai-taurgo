@@ -90,7 +90,7 @@ export function UploadSection({
             className="text-center mb-8 max-w-2xl mx-auto"
             style={{ color: 'var(--text-secondary)' }}
           >
-            Drop your images below or click to browse. Up to 5 images supported.
+            Drop your images below or click to browse.
           </p>
 
 
