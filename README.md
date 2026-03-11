@@ -4,7 +4,7 @@
 > Built for the Taurgo × Cardiff University AI Hackathon — March 2026
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-surveyaixtaurgo.netlify.app-1A3A6B?style=for-the-badge)](https://surveyaixtaurgo.netlify.app)
-[![Built With](https://img.shields.io/badge/Powered%20by-Claude%20claude-sonnet-4-20250514-C9943A?style=for-the-badge)](https://anthropic.com)
+[![Built With](https://img.shields.io/badge/Powered%20by-Claude%20Sonnet%204-C9943A?style=for-the-badge)](https://anthropic.com)
 [![Stack](https://img.shields.io/badge/Stack-React%20%2B%20TypeScript%20%2B%20Netlify-1A2035?style=for-the-badge)](#tech-stack)
 
 ---
