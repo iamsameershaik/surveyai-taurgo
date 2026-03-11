@@ -68,18 +68,18 @@ No login required. Upload any property image (JPG, PNG, HEIC) to generate a repo
 ┌─────────────────────────────────────────────────────────────────┐
 │                        Browser (Client)                         │
 │                                                                 │
-│  ┌─────────────┐    ┌──────────────┐    ┌───────────────────┐  │
-│  │UploadSection│    │useImageAnalys│    │  ReportSection    │  │
-│  │             │───▶│     is       │───▶│  ComparisonDash   │  │
-│  │ File picker │    │ (React hook) │    │  ReportQA         │  │
-│  │ HEIC→JPEG   │    │ imagesRef    │    │  DefectHighlight  │  │
-│  │ Fingerprint │    │ Session cache│    │  Viewer           │  │
-│  └─────────────┘    └──────┬───────┘    └───────────────────┘  │
-│                            │                                     │
-│                     fetch POST /analyse                          │
+│  ┌─────────────┐    ┌──────────────┐    ┌───────────────────┐   │
+│  │UploadSection│    │useImageAnalys│    │  ReportSection    │   │
+│  │             │───▶│     is       │───▶│  ComparisonDash   │   │
+│  │ File picker │    │ (React hook) │    │  ReportQA         │   │
+│  │ HEIC→JPEG   │    │ imagesRef    │    │  DefectHighlight  │   │
+│  │ Fingerprint │    │ Session cache│    │  Viewer           │   │
+│  └─────────────┘    └──────┬───────┘    └───────────────────┘   │
+│                            │                                    │
+│                     fetch POST /analyse                         │
 └────────────────────────────┼────────────────────────────────────┘
                              │
-                    ┌────────▼────────┐
+                    ┌────────▼─────────┐
                     │ Netlify Function │
                     │  analyse.js      │
                     │                  │
@@ -87,14 +87,14 @@ No login required. Upload any property image (JPG, PNG, HEIC) to generate a repo
                     │ • 25s timeout    │
                     │ • JSON validate  │
                     │ • Auto-retry     │
-                    └────────┬────────┘
+                    └────────┬─────────┘
                              │
                     ┌────────▼────────┐
-                    │  Anthropic API   │
-                    │                  │
-                    │ claude-sonnet-   │
-                    │ 4-20250514       │
-                    │ Vision + JSON    │
+                    │  Anthropic API  │
+                    │                 │
+                    │ claude-sonnet-  │
+                    │ 4-20250514      │
+                    │ Vision + JSON   │
                     └─────────────────┘
 ```
 
