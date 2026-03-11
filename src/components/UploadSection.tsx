@@ -1,6 +1,6 @@
 import { useState, useRef, DragEvent, ChangeEvent } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, X, ChevronDown, Search } from 'lucide-react';
+import { Upload, X, ChevronDown, Search, Check } from 'lucide-react';
 import { ImageAnalysis, PropertyContext } from '../types';
 
 interface UploadSectionProps {
@@ -11,6 +11,12 @@ interface UploadSectionProps {
   isAnalyzing: boolean;
 }
 
+const DEMO_IMAGES = [
+  { path: '/demo/demo-mould.jpg', label: 'Mould Growth', filename: 'demo-mould.jpg' },
+  { path: '/demo/demo-crack.jpg', label: 'Structural Crack', filename: 'demo-crack.jpg' },
+  { path: '/demo/demo-leak.jpg', label: 'Water Damage', filename: 'demo-leak.jpg' },
+];
+
 export function UploadSection({
   images,
   onAddImages,
@@ -20,6 +26,7 @@ export function UploadSection({
 }: UploadSectionProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [showContext, setShowContext] = useState(false);
+  const [selectedDemos, setSelectedDemos] = useState<Set<string>>(new Set());
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [context, setContext] = useState<PropertyContext>({
@@ -67,6 +74,33 @@ export function UploadSection({
 
   const handleAnalyzeClick = () => {
     onAnalyze(context);
+  };
+
+  const handleDemoClick = async (demoImage: typeof DEMO_IMAGES[0]) => {
+    const existingFilenames = images.map(img => img.file.name);
+
+    if (existingFilenames.includes(demoImage.filename)) {
+      return;
+    }
+
+    const newSelected = new Set(selectedDemos);
+    if (newSelected.has(demoImage.filename)) {
+      newSelected.delete(demoImage.filename);
+    } else {
+      newSelected.add(demoImage.filename);
+
+      try {
+        const response = await fetch(demoImage.path);
+        const blob = await response.blob();
+        const file = new File([blob], demoImage.filename, { type: 'image/jpeg' });
+        onAddImages([file]);
+      } catch (error) {
+        console.error('Failed to load demo image:', error);
+        newSelected.delete(demoImage.filename);
+      }
+    }
+
+    setSelectedDemos(newSelected);
   };
 
   const unanalyzedCount = images.filter((img) => !img.report && !img.error).length;
@@ -136,6 +170,58 @@ export function UploadSection({
                 Accepted: JPG, PNG, WEBP, HEIC — up to 15MB
               </p>
             </div>
+          </div>
+
+          <div className="my-8 flex items-center gap-4">
+            <div className="flex-1 h-px" style={{ background: 'var(--border-color)' }} />
+            <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+              Or try with demo images
+            </span>
+            <div className="flex-1 h-px" style={{ background: 'var(--border-color)' }} />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 overflow-x-auto sm:overflow-x-visible">
+            {DEMO_IMAGES.map((demo) => {
+              const isSelected = selectedDemos.has(demo.filename);
+              const isAlreadyUploaded = images.some(img => img.file.name === demo.filename);
+
+              return (
+                <motion.button
+                  key={demo.filename}
+                  onClick={() => handleDemoClick(demo)}
+                  disabled={isAlreadyUploaded}
+                  whileHover={!isAlreadyUploaded ? { scale: 1.02 } : {}}
+                  whileTap={!isAlreadyUploaded ? { scale: 0.98 } : {}}
+                  className={`neu-card p-3 transition-all ${
+                    isAlreadyUploaded ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                  }`}
+                  style={{
+                    border: isSelected ? `2px solid var(--accent-primary)` : '2px solid transparent',
+                  }}
+                >
+                  <div className="relative">
+                    <img
+                      src={demo.path}
+                      alt={demo.label}
+                      className="w-full h-32 object-cover rounded-lg mb-2"
+                    />
+                    {isSelected && (
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center"
+                        style={{ background: 'var(--accent-primary)', color: 'white' }}
+                      >
+                        <Check size={14} />
+                      </motion.div>
+                    )}
+                  </div>
+                  <p className="text-sm font-medium text-center" style={{ color: 'var(--text-primary)' }}>
+                    {demo.label}
+                  </p>
+                </motion.button>
+              );
+            })}
           </div>
 
           <AnimatePresence>
