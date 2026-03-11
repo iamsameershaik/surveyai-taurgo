@@ -7,6 +7,7 @@
 [![Built With](https://img.shields.io/badge/Powered%20by-Claude%20Sonnet%204-C9943A?style=for-the-badge)](https://anthropic.com)
 [![Stack](https://img.shields.io/badge/Stack-React%20%2B%20TypeScript%20%2B%20Netlify-1A2035?style=for-the-badge)](#tech-stack)
 
+🎥 **2-Minute Product Demo:** [Watch the demo](./public/demo/demo-video.mp4)
 ---
 
 ## Problem Statement
