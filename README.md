@@ -226,10 +226,10 @@ project/
 | Name | Role |
 |---|---|
 | **Sameer Shaik** | Lead Engineer — architecture, full-stack implementation, AI integration, deployment |
-| **Rayan** | Documentation — README, submission materials |
+| **Ryan** | Documentation — README, submission materials |
 | **Aditya** | Presentation — slide deck, demo narrative |
-| **Mason** | Feature development — Portfolio Comparison Dashboard |
-| **Razeen** | QA & Testing — cross-browser testing, bug reproduction, edge case validation |
+| **Mason** | Feature development — Photo Comparison |
+| **Razeen** | QA & Testing — cross-browser testing, bug reproduction |
 
 ---
 
