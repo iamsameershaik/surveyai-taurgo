@@ -250,3 +250,14 @@ SurveyAI is designed for **triage and prioritisation**, not as a replacement for
 Built at the **Taurgo × Cardiff University AI Hackathon, March 2026**.
 
 Powered by [Claude AI](https://anthropic.com) (Anthropic) · Deployed on [Netlify](https://netlify.com)
+
+## License
+
+© 2026 Sameer Shaik
+
+This project is licensed under the Creative Commons Attribution-NonCommercial 4.0 International License.
+
+Commercial use of this software, its source code, or derivative works is **not permitted without explicit written permission from the author**.
+
+See the LICENSE file for full details:
+https://creativecommons.org/licenses/by-nc/4.0/
