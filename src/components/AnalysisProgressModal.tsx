@@ -146,7 +146,7 @@ export function AnalysisProgressModal({ progress }: Props) {
           textAlign: 'center', fontSize: '11px', color: '#9ca3af',
           marginTop: '20px', marginBottom: 0,
         }}>
-          Claude AI is examining each image against RICS defect criteria
+          Nova Pro is examining each image against RICS defect criteria
         </p>
       </div>
     </div>
