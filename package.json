@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.app.json"
   },
   "dependencies": {
+    "@aws-sdk/client-bedrock-runtime": "^3.1030.0",
     "@supabase/supabase-js": "^2.57.4",
     "framer-motion": "^12.35.1",
     "git": "^0.1.5",
