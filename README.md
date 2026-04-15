@@ -10,7 +10,7 @@
 ![Status](https://img.shields.io/badge/status-prototype-green)
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-surveyaixtaurgo.netlify.app-1A3A6B?style=for-the-badge)](https://surveyaixtaurgo.netlify.app)
-[![Built With](https://img.shields.io/badge/Powered%20by-Claude%20Sonnet%204-C9943A?style=for-the-badge)](https://anthropic.com)
+[![Built With](https://img.shields.io/badge/Powered%20by-AWS%20Bedrock%20%7C%20Nova%20Pro-1A3A6B?style=for-the-badge)](https://aws.amazon.com/bedrock/)
 [![Stack](https://img.shields.io/badge/Stack-React%20%2B%20TypeScript%20%2B%20Netlify-1A2035?style=for-the-badge)](#tech-stack)
 
 🎥 **2-Minute Product Demo:** [Watch the demo](./public/demo/demo-video.mp4)
@@ -39,7 +39,9 @@ No login required. Upload any property image (JPG, PNG, HEIC) to generate a repo
 ## Features
 
 ### Core Analysis
-- **AI Vision Analysis** — Claude claude-sonnet-4-20250514 analyses property images and returns structured JSON conforming to a RICS-aligned defect schema
+- **AI Vision Analysis** — Amazon Nova Pro on AWS Bedrock (eu-west-2) analyses property images and returns structured JSON conforming to a RICS-aligned defect schema
+- **UK Jurisdiction Compliant** — All image processing stays within the London region; no data leaves UK/EU infrastructure
+- **Two-Step Prompt Chaining** — Vision → structured JSON → professional RICS report using the same model
 - **Severity Classification** — Five-tier system: Monitor / Low / Medium / High / Critical, with a 0–100 numeric severity score
 - **Defect Taxonomy** — 8 Tier-1 categories and 40+ Tier-2 subtypes with confidence scoring per defect
 - **Defect Zone Overlay** — Bounding box annotations on the source image showing the precise location of identified defects
@@ -57,7 +59,7 @@ No login required. Upload any property image (JPG, PNG, HEIC) to generate a repo
 ### Portfolio Tools
 - **Portfolio Comparison Dashboard** — Severity timeline, defect frequency heatmap, and combined cost estimate across all analysed properties (activates at 2+ images)
 - **Priority Action Summary** — Surfaces the single most urgent defect across the portfolio, ranked by severity first, then frequency and confidence
-- **Report Q&A** — Ask natural language questions about any individual report; answered in context by Claude
+- **Report Q&A** — Ask natural language questions about any individual report; answered in context by Amazon Nova Pro on AWS Bedrock
 ![Portfolio Comparison](/screenshots/portfolio_comparison.png)
 
 ### Export & UX
@@ -83,26 +85,29 @@ No login required. Upload any property image (JPG, PNG, HEIC) to generate a repo
 │  │ Fingerprint │    │ Session cache│    │  Viewer           │   │
 │  └─────────────┘    └──────┬───────┘    └───────────────────┘   │
 │                            │                                    │
-│                     fetch POST /analyse                         │
+│                 fetch POST /bedrock-analyze                     │
 └────────────────────────────┼────────────────────────────────────┘
                              │
                     ┌────────▼─────────┐
                     │ Netlify Function │
-                    │  analyse.js      │
+                    │ bedrock-         │
+                    │ analyze.js       │
                     │                  │
                     │ • API key guard  │
-                    │ • 25s timeout    │
+                    │ • Daily limit    │
                     │ • JSON validate  │
                     │ • Auto-retry     │
                     └────────┬─────────┘
                              │
-                    ┌────────▼────────┐
-                    │  Anthropic API  │
-                    │                 │
-                    │ claude-sonnet-  │
-                    │ 4-20250514      │
-                    │ Vision + JSON   │
-                    └─────────────────┘
+          ┌──────────────────▼──────────────────┐
+          │       AWS Bedrock (eu-west-2)        │
+          │                                      │
+          │      Amazon Nova Pro (vision + text) │
+          │  • Step 1: Image → JSON              │
+          │    (defects, cost, risk, citations)  │
+          │  • Step 2: JSON → RICS report        │
+          │    (professional markdown narrative) │
+          └──────────────────────────────────────┘
 ```
 
 ### Key Design Decisions
@@ -115,6 +120,7 @@ No login required. Upload any property image (JPG, PNG, HEIC) to generate a repo
 | HEIC conversion at upload | Single conversion upstream; both thumbnail and analysis pipeline consume the same JPEG data URL |
 | Session fingerprint cache | `file.size + hash(first 8KB) + context` key prevents re-analysis variance without persisting data |
 | JSON schema validation + retry | Malformed AI responses are caught server-side and retried once before surfacing an error |
+| Migration to Bedrock | Migrated from Anthropic Claude to AWS Bedrock (Nova Pro) for UK jurisdiction compliance. Same two-step prompt chain, same output quality, compliant infrastructure. |
 
 ---
 
@@ -130,8 +136,9 @@ No login required. Upload any property image (JPG, PNG, HEIC) to generate a repo
 | PDF generation | jsPDF 4.2 |
 | HEIC conversion | heic2any 0.0.4 |
 | Deployment | Netlify (static + serverless functions) |
-| AI model | Claude claude-sonnet-4-20250514 (Anthropic) |
-| API integration | Anthropic Messages API v1 via Netlify function |
+| AI Model (Production) | Amazon Nova Pro on AWS Bedrock (eu-west-2) |
+| AI Model (Development) | Claude Sonnet 4 (coding assistance only — not in production) |
+| API integration | AWS Bedrock Converse API via Netlify function |
 
 ---
 
@@ -141,7 +148,7 @@ No login required. Upload any property image (JPG, PNG, HEIC) to generate a repo
 
 - Node.js 18+
 - Netlify CLI (`npm install -g netlify-cli`)
-- An Anthropic API key
+- AWS credentials with Bedrock access (eu-west-2)
 
 ### Local Development
 
@@ -154,7 +161,9 @@ cd surveyai/project
 npm install
 
 # 3. Create a .env file
-echo "ANTHROPIC_API_KEY=your_key_here" > .env
+cp .env.example .env
+# Fill in your BEDROCK_AWS_ACCESS_KEY_ID, BEDROCK_AWS_SECRET_ACCESS_KEY,
+# BEDROCK_API_SECRET_KEY, and BEDROCK_DAILY_LIMIT values
 
 # 4. Start the dev server (Netlify CLI required for functions)
 netlify dev
@@ -177,9 +186,12 @@ Or connect the repository to Netlify via the dashboard for automatic deployments
 
 | Variable | Required | Description |
 |---|---|---|
-| `ANTHROPIC_API_KEY` | Yes | Your Anthropic API key. Set in Netlify dashboard under Site Settings → Environment Variables. Never commit this to the repository. |
+| `BEDROCK_AWS_ACCESS_KEY_ID` | Yes | Your AWS access key for Bedrock. Set in Netlify dashboard under Site Settings → Environment Variables. Never commit this to the repository. |
+| `BEDROCK_AWS_SECRET_ACCESS_KEY` | Yes | Your AWS secret key for Bedrock. Set in Netlify dashboard. Never commit this to the repository. |
+| `BEDROCK_API_SECRET_KEY` | Yes | API key for securing the `bedrock-analyze` function endpoint against unauthorised calls. |
+| `BEDROCK_DAILY_LIMIT` | No | Maximum number of analyses per day (default: 30). Set higher in production as required. |
 
-The key is accessed only within `netlify/functions/analyse.js` and `netlify/functions/qa.js` — it is never sent to or exposed in the browser.
+These variables are accessed only within `netlify/functions/bedrock-analyze.js` and `netlify/functions/qa.js` — they are never sent to or exposed in the browser.
 
 ---
 
@@ -189,8 +201,8 @@ The key is accessed only within `netlify/functions/analyse.js` and `netlify/func
 project/
 ├── netlify/
 │   └── functions/
-│       ├── analyse.js          # Main analysis handler + JSON validation
-│       └── qa.js               # Report Q&A handler
+│       ├── bedrock-analyze.js  # Main analysis handler — vision → JSON → RICS report (AWS Bedrock)
+│       └── qa.js               # Report Q&A handler (AWS Bedrock)
 ├── src/
 │   ├── components/
 │   │   ├── AnalysisProgressModal.tsx
@@ -219,9 +231,9 @@ project/
 
 | Criterion | Weight | How SurveyAI addresses it |
 |---|---|---|
-| **AI Integration** | 30% | Claude claude-sonnet-4-20250514 vision API for defect analysis; structured JSON schema with RICS-aligned prompt engineering; JSON validation with auto-retry; Q&A feature using report context; session-level result caching for consistency |
+| **AI Integration** | 30% | Amazon Nova Pro on AWS Bedrock (eu-west-2) for vision analysis; structured JSON schema with RICS-aligned prompt engineering; two-step prompt chaining (vision → JSON → report); JSON validation with auto-retry; Q&A feature using report context; session-level result caching for consistency |
 | **Functionality** | 25% | End-to-end pipeline from image upload to exportable PDF report; portfolio comparison across multiple properties; HEIC support; defect zone overlay; severity-weighted priority ranking |
-| **Code Quality** | 15% | TypeScript throughout; custom React hooks separating concerns; `imagesRef` pattern for async state correctness; null-safe rendering; serverless function with validation layer and timeout handling |
+| **Code Quality** | 15% | TypeScript throughout; custom React hooks separating concerns; `imagesRef` pattern for async state correctness; null-safe rendering; serverless function with validation layer and daily rate limiting |
 | **UI/UX** | 15% | Glassmorphism design system; per-image progress modal; severity gauge; interactive defect overlay with toggle; responsive layout; smooth Framer Motion transitions |
 | **Documentation** | 15% | This README; inline code comments on all non-obvious architectural decisions; reflection document; demo video script |
 
@@ -255,7 +267,9 @@ SurveyAI is designed for **triage and prioritisation**, not as a replacement for
 
 Built at the **Taurgo × Cardiff University AI Hackathon, March 2026**.
 
-Powered by [Claude AI](https://anthropic.com) (Anthropic) · Deployed on [Netlify](https://netlify.com)
+Image analysis powered by **Amazon Nova Pro** on **AWS Bedrock** (eu-west-2, London region) · Deployed on [Netlify](https://netlify.com)
+
+Claude by Anthropic used during development for coding assistance and prototyping.
 
 ## License
 
