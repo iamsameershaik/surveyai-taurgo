@@ -1,12 +1,26 @@
+const { BedrockRuntimeClient, ConverseCommand } = require('@aws-sdk/client-bedrock-runtime');
+
+const client = new BedrockRuntimeClient({
+  region: 'eu-west-2',
+  credentials: {
+    accessKeyId: process.env.BEDROCK_AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.BEDROCK_AWS_SECRET_ACCESS_KEY,
+  },
+});
+
+const MODEL_ID = 'amazon.nova-pro-v1:0';
+
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+};
+
 exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      },
+      headers: CORS_HEADERS,
       body: '',
     };
   }
@@ -58,46 +72,38 @@ ${reportContext.citations?.length ? `Referenced standards: ${reportContext.citat
 
 USER QUESTION: ${question}`;
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
+    const command = new ConverseCommand({
+      modelId: MODEL_ID,
+      system: [{ text: systemPrompt }],
+      messages: [
+        {
+          role: 'user',
+          content: [{ text: userMessage }],
+        },
+      ],
+      inferenceConfig: {
+        maxTokens: 400,
       },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 400,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: userMessage }],
-      }),
     });
 
-    const data = await response.json();
+    const response = await client.send(command);
 
-    if (data.error) {
-      return {
-        statusCode: 400,
-        headers: { 'Access-Control-Allow-Origin': '*' },
-        body: JSON.stringify({ error: data.error.message }),
-      };
-    }
-
-    const answer = data.content
-      .map(block => (block.type === 'text' ? block.text : ''))
-      .filter(Boolean)
+    const answer = response.output.message.content
+      .filter(b => b.text)
+      .map(b => b.text)
       .join('');
 
     return {
       statusCode: 200,
-      headers: { 'Access-Control-Allow-Origin': '*' },
+      headers: CORS_HEADERS,
       body: JSON.stringify({ answer }),
     };
 
   } catch (err) {
+    console.error('[qa] Error:', err);
     return {
       statusCode: 500,
-      headers: { 'Access-Control-Allow-Origin': '*' },
+      headers: CORS_HEADERS,
       body: JSON.stringify({ error: err.message }),
     };
   }
