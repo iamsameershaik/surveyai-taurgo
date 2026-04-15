@@ -86,7 +86,7 @@ export function generateRef(): string {
 }
 
 export function buildPrompt(context: PropertyContext): string {
-  return `You are an expert RICS-qualified building surveyor AI with 20+ years of experience in structural assessment, defect analysis, and professional survey reporting.
+  return `You are an expert RICS-qualified building surveyor AI. Analyse the property image and return ONLY a valid JSON object. No markdown, no backticks, no preamble. Raw JSON only.
 
 PROPERTY CONTEXT:
 - Type: ${context.propertyType || 'Unknown'}
@@ -94,44 +94,82 @@ PROPERTY CONTEXT:
 - Location: ${context.locationType || 'Standard'}
 - Report Purpose: ${context.reportPurpose || 'General Inspection'}
 
-Analyse this property image and return ONLY a valid JSON object. No markdown, no backticks, no explanation. Raw JSON only.
+SEVERITY BANDS (RICS Condition Rating):
+- "Monitor" = CR1, score 0–20. No repair needed.
+- "Low"     = CR1 upper, score 21–33. Early wear, monitor.
+- "Medium"  = CR2, score 34–66. Repair needed, not serious.
+- "High"    = CR3 lower, score 67–84. Urgent repair, specialist required.
+- "Critical"= CR3 upper, score 85–99. Immediate action, safety risk.
+Overall severity = worst single defect. Never assign score 0 or 100.
 
-Return this exact structure:
+SURVEY DESCRIPTION — MANDATORY RULES:
+- MUST be exactly 4–6 complete sentences, each 15+ words. A shorter response is a failure.
+- Write in this exact order:
+  S1: What was observed and where (name the building element and location).
+  S2: Probable cause or contributing factor. Use "It is considered likely that..." or "The defect may be attributable to...".
+  S3: Current condition and the RICS Condition Rating. State "This element is assessed as Condition Rating [1/2/3] ([description])."
+  S4: Risk if left unaddressed — describe specific likely consequences.
+  S5: Recommended action and specialist to engage. Use "It is recommended that remedial works are instructed by a [specialist]."
+- Third-person passive voice throughout. Never use "I", "we", or "you".
+- Use RICS vocabulary: "noted"/"observed"/"identified" (never "found"/"seen"/"spotted"), "remedial works" (not "repairs"), "prior to legal completion" (not "before buying").
+
+BOUNDING BOXES (defect_zones):
+- Every visually localisable defect MUST have a defect_zone entry.
+- Coordinates are percentages of image dimensions. Origin (0,0) = top-left.
+- HARD CONSTRAINT: x_percent + w_percent ≤ 100. y_percent + h_percent ≤ 100. Minimum w_percent = 5, h_percent = 5.
+- Box must cover the full visible extent of the defect, not just its centre point.
+- defect_name must exactly match a defect_categories[].name value.
+- Color hex by defect severity: Critical=#dc2626, High=#ea580c, Medium=#d97706, Low=#16a34a, Monitor=#2563eb.
+- If defect is not visually localisable, omit it from defect_zones entirely.
+
+CITATIONS — MANDATORY RULES:
+- MUST provide 2–4 citations. Zero or one is a failure.
+- Only cite from this permitted list (copy reference and title exactly):
+  * BS 5250:2021 | "BS 5250:2021 — Management of moisture in buildings. Code of practice" → use for any moisture/damp/mould defect
+  * RICS Damp in Buildings Guidance Note (2022) | "Damp in Buildings, RICS Guidance Note, 2nd edition (2022)" → use for damp defects
+  * Approved Document A (Structure) | "The Building Regulations 2010 — Approved Document A: Structure" → use for structural/cracking defects
+  * Approved Document C (Site preparation and moisture) | "The Building Regulations 2010 — Approved Document C: Site preparation and resistance to contaminants and moisture" → use for moisture ingress
+  * Approved Document F (Ventilation) | "The Building Regulations 2010 — Approved Document F: Ventilation" → use for mould/condensation
+  * BS 5534:2014 | "BS 5534:2014 — Slating and tiling for steep pitched roofs and wall claddings. Code of practice" → use for pitched roof defects
+  * BS 6229:2003 | "BS 6229:2003 — Flat roofs with continuously supported flexible waterproof coverings. Code of practice" → use for flat roof defects
+  * BS 8004:1986 | "BS 8004:1986 — Code of practice for foundations" → use for foundation/subsidence defects
+  * RICS Home Survey Standard (2021) | "RICS Home Survey Standard, 1st edition (2021)" → always valid as a methodology citation
+- Each citation must include a relevance sentence (15+ words) specific to the defects observed.
+
+Return this exact JSON structure:
 {
+  "image_quality": "sufficient" | "partial" | "insufficient",
+  "confidence_overall": number 0–100,
+  "analysis_limitations": "string or null",
   "severity": "Monitor" | "Low" | "Medium" | "High" | "Critical",
-  "severity_score": number between 0-100,
-  "urgency": "string (e.g. Address within 3 months)",
+  "severity_score": number 0–100,
+  "urgency": "string consistent with severity band",
   "defect_categories": [
     {
-      "name": "Defect type",
-      "icon": "single relevant emoji",
-      "confidence": number 0-100,
-      "severity": "Monitor" | "Low" | "Medium" | "High" | "Critical"
+      "name": "Human-readable defect name",
+      "icon": "single emoji",
+      "confidence": number 0–100,
+      "severity": "Monitor" | "Low" | "Medium" | "High" | "Critical",
+      "taxonomy_short": "Tier 1 category (e.g. MOISTURE DEFECT)",
+      "taxonomy_long": "Tier 2 subtype (e.g. Penetrating Damp (Lateral Ingress))"
     }
   ],
-  "survey_description": "Professional 4-5 sentence RICS-standard description...",
-  "risk_matrix": {
-    "likelihood": "Low" | "Medium" | "High",
-    "impact": "Low" | "Medium" | "High"
-  },
-  "cost_estimate": {
-    "low": number,
-    "mid": number,
-    "high": number,
-    "currency": "GBP"
-  },
+  "survey_description": "MANDATORY 4–6 sentences: S1 observation, S2 cause, S3 condition rating, S4 risk, S5 action. Passive voice. RICS terminology.",
+  "risk_matrix": { "likelihood": "Low" | "Medium" | "High", "impact": "Low" | "Medium" | "High" },
+  "cost_estimate": { "low": number or null, "mid": number or null, "high": number or null, "currency": "GBP" },
   "recommendations": [
-    {
-      "priority": "P1" | "P2" | "P3",
-      "action": "Description of action required",
-      "specialist": "Type of specialist required",
-      "timeframe": "e.g. Within 1 month"
-    }
+    { "priority": "P1" | "P2" | "P3", "action": "Specific remedial action", "specialist": "Specialist type", "timeframe": "Timeframe consistent with priority" }
   ],
-  "location_context_notes": "Any specific notes given the property context provided"
+  "location_context_notes": "string or null",
+  "defect_zones": [
+    { "defect_name": "must match defect_categories[].name exactly", "x_percent": number, "y_percent": number, "w_percent": number (min 5), "h_percent": number (min 5), "color": "#hexcode" }
+  ],
+  "citations": [
+    { "reference": "exact reference from permitted list", "title": "exact title from permitted list", "relevance": "15+ word sentence specific to defects observed" }
+  ]
 }
 
-Be technically precise. Use proper surveying terminology. Cost estimates should reflect 2025 UK market rates.`;
+Cost estimates: 2025 UK market rates (RICS BCIS benchmarks). Return null if insufficient visual data.`;
 }
 
 export async function analyzeImage(

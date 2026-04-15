@@ -304,7 +304,7 @@ FIRE & SAFETY
 SECTION D — BOUNDING BOX INSTRUCTIONS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-For each identified defect, provide a defect_zone bounding box using percentage coordinates relative to the full image dimensions.
+For each identified defect, provide a defect_zone bounding box using percentage coordinates relative to the full image dimensions. Every defect in defect_categories that is visually localisable MUST have a corresponding entry in defect_zones.
 
 COORDINATE SYSTEM:
 - Origin (0, 0) is the TOP-LEFT corner of the image.
@@ -312,16 +312,27 @@ COORDINATE SYSTEM:
 - y_percent increases top → bottom (0 = top edge, 100 = bottom edge).
 - w_percent is the width of the box as a percentage of total image width.
 - h_percent is the height of the box as a percentage of total image height.
-- x_percent + w_percent must not exceed 100. y_percent + h_percent must not exceed 100.
+- HARD CONSTRAINT: x_percent + w_percent MUST be ≤ 100. y_percent + h_percent MUST be ≤ 100.
+  Before emitting each zone, verify: if x_percent + w_percent > 100, reduce w_percent to (100 − x_percent). If y_percent + h_percent > 100, reduce h_percent to (100 − y_percent).
 
 PLACEMENT RULES:
-- Draw the box tightly around the visible defect area only. Do not include surrounding undamaged material unless the defect boundary is unclear.
-- Minimum box size: w_percent ≥ 3, h_percent ≥ 3. Never place a point or line — always a box with area.
-- If a defect spans a large area (e.g. widespread damp staining across an entire wall face), set the box to cover the full affected area, not just the most visible point.
-- If two defects of the same type appear in different locations, create two separate defect_zone entries with distinct coordinates.
-- If a defect is not visible or its location cannot be localised (e.g. suspected interstitial condensation with no visible surface manifestation), omit that defect from defect_zones entirely rather than placing a speculative box.
+- Examine the image carefully. Identify the pixel region where the defect is most clearly visible. Estimate its position as a fraction of the image's total width and height.
+- Draw the box tightly around the full visible extent of the defect. Include all affected material. Do not clip the box to just the most intense point.
+- Minimum box size: w_percent ≥ 5, h_percent ≥ 5. Never place a point or a line — always a rectangle with meaningful area.
+- If a defect spans a large area (e.g. widespread damp staining, extensive cracking across a wall face), set the box to cover the entire affected region.
+- If two distinct occurrences of the same defect type appear at separate locations, create two separate defect_zone entries, each with their own coordinates. Give them distinct defect_name values (e.g. "Mould Growth (left wall)" and "Mould Growth (ceiling)").
+- If a defect is not visually localisable (e.g. suspected interstitial condensation with no surface manifestation, or a subsurface condition), OMIT it from defect_zones entirely. Do not guess or place a speculative box.
+- defect_name MUST exactly match the name field of a corresponding defect_category entry.
 
-COLOUR ASSIGNMENT (use exactly these hex codes, matched to defect severity):
+SELF-CHECK BEFORE OUTPUT:
+After generating all defect_zone entries, verify each one:
+1. Is x_percent + w_percent ≤ 100? If not, correct it.
+2. Is y_percent + h_percent ≤ 100? If not, correct it.
+3. Is w_percent ≥ 5 and h_percent ≥ 5? If not, expand to minimum.
+4. Does defect_name exactly match a defect_categories[].name value? If not, correct the spelling.
+5. Is the color hex exactly one of the five values below?
+
+COLOUR ASSIGNMENT (use exactly these hex codes, matched to the individual defect's severity, not the overall severity):
 - Critical: #dc2626
 - High:     #ea580c
 - Medium:   #d97706
@@ -332,44 +343,51 @@ COLOUR ASSIGNMENT (use exactly these hex codes, matched to defect severity):
 SECTION E — SURVEY DESCRIPTION RULES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Write a formal RICS Level 2 HomeBuyer Report style description. Follow ALL of these rules:
+Write a formal RICS Level 2 HomeBuyer Report style description. This is the primary narrative output and must be substantive: 4–6 complete sentences, each fulfilling a specific purpose. A one-sentence or two-sentence response is a failure. Follow ALL rules below.
 
-1. VOICE: Third-person passive throughout. Never use "I" or "we". Use: "Evidence of...", "Signs of... were observed", "The element appears to...", "It is considered that...", "Attention is drawn to...".
+1. MANDATORY LENGTH: The survey_description field MUST contain exactly 4–6 sentences. Each sentence must be substantive (15+ words). Do not truncate. Do not summarise into a single sentence. If the image quality is partial or the defect is minor, you must still write 4 full sentences — adjust the language accordingly (e.g. "no significant defects were observed" still requires a 4-sentence description confirming condition).
 
-2. CONDITION RATING: Reference the applicable CR explicitly in the description. Use:
-   - "This element is considered to be Condition Rating 1 (no repair currently needed)."
-   - "This element is assessed as Condition Rating 2 (defects requiring repair but not considered serious)."
-   - "This element is assessed as Condition Rating 3 (serious defects requiring urgent investigation or remedial action)."
+2. MANDATORY SENTENCE STRUCTURE — write these sentences in this exact order:
+   S1 — OBSERVATION: Describe what was observed and precisely where. Name the building element and its location. Use specific technical language (e.g. "Evidence of surface mould growth was observed to the internal face of the external masonry wall at high level, concentrated at the junction with the ceiling soffit.").
+   S2 — CAUSE: State the probable cause or contributing factors. Reference the mechanism (e.g. thermal bridging, blocked drainage, failed pointing, rising ground moisture). Use "It is considered likely that..." or "The defect may be attributable to...".
+   S3 — CONDITION RATING: State the current condition, the extent of the affected area, and explicitly name the applicable RICS Condition Rating. Use one of: "This element is assessed as Condition Rating 1 (no repair currently needed)." / "This element is assessed as Condition Rating 2 (defects requiring repair but not considered serious)." / "This element is assessed as Condition Rating 3 (serious defects requiring urgent investigation or remedial action)." Then add a sentence quantifying extent where possible (e.g. "The affected area extends approximately [X]% of the wall face.").
+   S4 — RISK: Describe the risk or consequences if the defect is left unaddressed. Be specific about the likely progression (e.g. "If left unaddressed, moisture ingress of this nature is likely to result in deterioration of the internal plaster substrate, potential damage to floor joists, and conditions conducive to secondary biological growth.").
+   S5 — ACTION: State the recommended course of action, including the type of specialist to be engaged and the urgency. Use "It is recommended that..." or "Remedial works should be instructed...". Reference the specialist by professional designation (e.g. "a suitably qualified damp-proofing contractor", "a structural engineer", "a NICEIC-registered electrician", "a roofing contractor").
 
-3. RICS PHRASING CONVENTIONS:
-   - "Evidence of penetrating/rising dampness was noted to..."
-   - "Cracking was observed to the [element], which is considered to be [superficial/structural/movement-related]..."
-   - "The [element] exhibited signs of [defect], which may be attributable to [cause]..."
-   - "Further investigation by a [specialist] is recommended prior to legal completion."
-   - "The defect is considered to be [minor/moderate/significant] and [does/does not] affect the structural integrity of the building."
-   - "It is recommended that the matter is investigated as a matter of [routine/urgency] by a suitably qualified contractor."
+3. VOICE: Third-person passive throughout. Never use "I", "we", or "you". Use: "Evidence of... was observed", "Signs of... were noted", "The element appears to...", "It is considered that...", "Attention is drawn to...".
 
-4. VOCABULARY: Use "noted", "observed", "identified", "evident", "apparent" — never "found", "seen", or "spotted". Use "remedial works" not "repairs". Use "further investigation is warranted" not "you should check". Use "it is considered likely that" not "probably". Use "instructed", "appointed", or "engaged" for specialists.
+4. VOCABULARY: Use "noted", "observed", "identified", "evident", "apparent" — never "found", "seen", or "spotted". Use "remedial works" not "repairs". Use "further investigation is warranted" not "you should check". Use "it is considered likely that" not "probably". Use "instructed", "appointed", or "engaged" for specialists. Use "prior to legal completion" not "before buying".
 
-5. BUILDING ELEMENT TERMS: "external render", "masonry substrate", "soffit", "fascia", "party wall", "damp-proof course (DPC)", "damp-proof membrane (DPM)", "joinery", "fenestration", "substructure", "superstructure", "roof covering", "rainwater goods".
-
-6. STRUCTURE (4–5 sentences in this order):
-   - S1: What was observed and where (element/location).
-   - S2: Probable cause or contributing factors.
-   - S3: Current condition, extent, and applicable Condition Rating.
-   - S4: Risk or implications if left unaddressed.
-   - S5: Recommended course of action and specialist referral.
+5. BUILDING ELEMENT TERMS: "external render", "masonry substrate", "soffit", "fascia", "party wall", "damp-proof course (DPC)", "damp-proof membrane (DPM)", "joinery", "fenestration", "substructure", "superstructure", "roof covering", "rainwater goods", "ceiling void", "floor zone", "wall plate".
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 SECTION F — CITATIONS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Provide 2–4 citations from the list below. Only cite standards directly relevant to the defects observed. Do not fabricate reference numbers or titles. If fewer than 2 directly relevant standards exist, cite only those that genuinely apply.
+MANDATORY: You MUST provide between 2 and 4 citations. Providing zero or one citation is a failure. Citations must come exclusively from the permitted list below — do not fabricate any reference number, year, or title. Each citation must include a one-sentence relevance statement explaining why it applies to the specific defects observed in this image.
 
-PERMITTED CITATION SOURCES:
-RICS: Home Survey Standard (2021) | Damp in Buildings Guidance Note (2022) | HomeBuyer Report Professional Statement (2019) | Surveying Safely (2nd ed.)
-BS: 5250:2021 (moisture in buildings) | 8102:2022 (below-ground water ingress) | 5534:2014 (slating and tiling) | 6229:2003 (flat roofs) | 8215:1991 (damp-proof courses) | 8004 (foundations) | 6399 (loading) | 6093:2006 (joints and jointing)
-Approved Documents: A (Structure) | C (Site preparation/moisture) | F (Ventilation) | L (Fuel and power)
+SELECTION RULES BY DEFECT TYPE — use these as your primary guide:
+- Moisture / Damp defects → ALWAYS cite: BS 5250:2021 AND RICS Damp in Buildings Guidance Note (2022). Additionally cite BS 8102:2022 if below-ground moisture is suspected. Additionally cite Approved Document C if site preparation or subfloor moisture is relevant.
+- Structural cracking / movement → ALWAYS cite: Approved Document A (Structure) AND BS 8004 (foundations) if foundation movement is suspected. Additionally cite RICS Home Survey Standard (2021) for the survey methodology context.
+- Roof defects → ALWAYS cite: BS 5534:2014 for pitched roofs, or BS 6229:2003 for flat roofs. Additionally cite RICS Home Survey Standard (2021).
+- Biological growth (mould, algae) → ALWAYS cite: BS 5250:2021 (condensation and moisture control) AND Approved Document F (ventilation) if inadequate ventilation is a contributing factor.
+- Material degradation (spalling, render failure, mortar erosion) → Cite BS 6093:2006 (joint design) if relevant to mortar joint failure. Cite Approved Document C for moisture-driven decay.
+- General survey methodology → RICS Home Survey Standard (2021) is always an appropriate secondary citation.
+
+PERMITTED CITATION SOURCES (copy reference and title exactly as written):
+- RICS Home Survey Standard (2021) | "RICS Home Survey Standard, 1st edition (2021)"
+- RICS Damp in Buildings Guidance Note (2022) | "Damp in Buildings, RICS Guidance Note, 2nd edition (2022)"
+- RICS HomeBuyer Report Professional Statement (2019) | "RICS HomeBuyer Report, Professional Statement (2019)"
+- BS 5250:2021 | "BS 5250:2021 — Management of moisture in buildings. Code of practice"
+- BS 8102:2022 | "BS 8102:2022 — Code of practice for protection of below ground structures against water from the ground"
+- BS 5534:2014 | "BS 5534:2014 — Slating and tiling for steep pitched roofs and wall claddings. Code of practice"
+- BS 6229:2003 | "BS 6229:2003 — Flat roofs with continuously supported flexible waterproof coverings. Code of practice"
+- BS 8215:1991 | "BS 8215:1991 — Code of practice for design and installation of damp-proof courses in masonry construction"
+- BS 8004:1986 | "BS 8004:1986 — Code of practice for foundations"
+- BS 6093:2006 | "BS 6093:2006 — Design of joints and jointing in building construction. Guide"
+- Approved Document A (Structure) | "The Building Regulations 2010 — Approved Document A: Structure"
+- Approved Document C (Site preparation and moisture) | "The Building Regulations 2010 — Approved Document C: Site preparation and resistance to contaminants and moisture"
+- Approved Document F (Ventilation) | "The Building Regulations 2010 — Approved Document F: Ventilation"
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 SECTION G — OUTPUT SCHEMA
@@ -394,7 +412,7 @@ Analyse the property image and return ONLY a valid JSON object. No markdown, no 
       "taxonomy_long": "Tier 2 specific subtype from Section C taxonomy"
     }
   ],
-  "survey_description": "4–5 sentence formal RICS Level 2 survey description per Section E rules, including explicit Condition Rating reference",
+  "survey_description": "MANDATORY 4–6 sentences following the S1–S5 structure in Section E: (S1) what observed and where, (S2) probable cause, (S3) condition rating with CR number, (S4) risk if ignored, (S5) recommended specialist action. Each sentence must be 15+ words. Passive voice. RICS terminology throughout.",
   "risk_matrix": {
     "likelihood": "Low" | "Medium" | "High",
     "impact": "Low" | "Medium" | "High"
@@ -426,10 +444,11 @@ Analyse the property image and return ONLY a valid JSON object. No markdown, no 
   ],
   "citations": [
     {
-      "reference": "Standard reference (e.g. BS 5250:2021)",
-      "title": "Full title of the standard",
-      "relevance": "One sentence explaining direct applicability to the defects observed"
+      "reference": "Standard reference exactly as listed in Section F (e.g. 'BS 5250:2021')",
+      "title": "Full title exactly as listed in Section F",
+      "relevance": "One sentence (15+ words) explaining direct applicability to the specific defects observed in this image"
     }
   ]
+  // REMINDER: citations array MUST contain 2–4 entries. Zero or one entry is a validation failure.
 }`;
 }
