@@ -138,10 +138,11 @@ export async function analyzeImage(
   base64Image: string,
   context: PropertyContext
 ): Promise<AnalysisReport> {
-  const response = await fetch('/.netlify/functions/analyse', {
+  const response = await fetch('/.netlify/functions/bedrock-analyze', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'x-api-key': import.meta.env.VITE_API_SECRET_KEY || '',
     },
     body: JSON.stringify({
       imageBase64: base64Image,
@@ -161,27 +162,7 @@ export async function analyzeImage(
   }
 
   const data = await response.json();
-  const rawText = data.content
-    .map((block: { type: string; text?: string }) =>
-      block.type === 'text' ? block.text : ''
-    )
-    .filter(Boolean)
-    .join('');
-
-  const clean = rawText
-    .replace(/^```json\s*/i, '')
-    .replace(/^```\s*/i, '')
-    .replace(/\s*```$/i, '')
-    .trim();
-
-  try {
-    const report = JSON.parse(clean);
-    return report;
-  } catch (error) {
-    console.error('JSON parse error:', error);
-    console.error('Raw text:', rawText);
-    throw new Error('Failed to parse AI response');
-  }
+  return data.analysis as AnalysisReport;
 }
 
 export function buildReportText(report: AnalysisReport, ref: string): string {

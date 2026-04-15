@@ -4,6 +4,10 @@
 
 [functions]
   directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+[functions."bedrock-analyze"]
+  timeout = 30
 
 [[redirects]]
   from = "/*"
