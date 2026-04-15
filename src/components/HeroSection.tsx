@@ -48,7 +48,7 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
               style={{ color: 'var(--accent-secondary)' }}
             >
               <Zap size={16} />
-              <span>10-second analysis</span>
+              <span>30-second analysis</span>
             </motion.div>
             <motion.div
               initial={{ opacity: 0, x: -10 }}
