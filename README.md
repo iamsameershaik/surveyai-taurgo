@@ -47,6 +47,7 @@ No login required. Upload any property image (JPG, PNG, HEIC) to generate a repo
 - **Defect Zone Overlay** — Bounding box annotations on the source image showing the precise location of identified defects
 - **RICS-Standard Language** — Survey descriptions, urgency ratings, and recommendations written to professional survey conventions
 - **Standards Citations** — Relevant RICS guidance notes, British Standards, and UK Building Regulations cited per report
+
 ![Defect Overlay](/screenshots/damage_overlay.png)
 
 ### Cost & Risk Intelligence
