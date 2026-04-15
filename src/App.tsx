@@ -132,7 +132,7 @@ ${image.report.location_context_notes ? `CONTEXT NOTES:\n${image.report.location
     const fullText = `SURVEYAI — FULL PORTFOLIO REPORT
 Generated: ${new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}
 Total Properties Analysed: ${analyzedImages.length}
-Powered by Claude AI (Anthropic) · Built by Team 8 · Taurgo × Cardiff University Hackathon 2026
+Powered by Claude AI (Anthropic) + Nova Pro (Amazon) · Built by Team 8 · Taurgo × Cardiff University Hackathon 2026
 
 ${text}
 
