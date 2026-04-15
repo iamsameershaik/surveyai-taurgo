@@ -129,7 +129,7 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
               AI Analyses
             </h3>
             <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-              Claude Vision identifies all defects & risks
+              Nova Pro identifies all defects & risks
             </p>
           </div>
 
