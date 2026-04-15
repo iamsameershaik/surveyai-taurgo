@@ -100,7 +100,7 @@ No login required. Upload any property image (JPG, PNG, HEIC) to generate a repo
                     │ • Auto-retry     │
                     └────────┬─────────┘
                              │
-          ┌──────────────────▼──────────────────┐
+          ┌──────────────────▼───────────────────┐
           │       AWS Bedrock (eu-west-2)        │
           │                                      │
           │      Amazon Nova Pro (vision + text) │
