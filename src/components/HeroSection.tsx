@@ -36,7 +36,7 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
           >
             Upload any property image. SurveyAI identifies structural defects,
             classifies damage severity, and generates a professional
-            RICS-standard survey report — in under 10 seconds.
+            RICS-standard survey report — in under 30 seconds.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-4 mb-10">
