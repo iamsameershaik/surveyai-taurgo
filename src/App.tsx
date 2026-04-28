@@ -10,6 +10,7 @@ import { useImageAnalysis } from './hooks/useImageAnalysis';
 import { PropertyContext } from './types';
 import { Download } from 'lucide-react';
 import { generatePDF } from './utils/generatePDF';
+import { InstallPWAButton } from './components/InstallPWAButton';
 
 class ReportErrorBoundary extends Component<
   { children: React.ReactNode },
@@ -183,6 +184,7 @@ END OF REPORT
 
   return (
     <div className="scroll-smooth">
+      <InstallPWAButton />
       <HeroSection onGetStarted={handleGetStarted} />
       <UploadSection
         images={images}
