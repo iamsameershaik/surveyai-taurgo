@@ -19,7 +19,7 @@ export function InstallPWAButton() {
   }, [open]);
 
   return (
-    <div className="fixed top-4 right-4 z-50" ref={panelRef}>
+    <div className="fixed bottom-4 right-4 z-50" ref={panelRef}>
       <button
         onClick={() => setOpen((v) => !v)}
         aria-label="Install app"
@@ -39,11 +39,11 @@ export function InstallPWAButton() {
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, y: -8, scale: 0.96 }}
+            initial={{ opacity: 0, y: 8, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -8, scale: 0.96 }}
+            exit={{ opacity: 0, y: 8, scale: 0.96 }}
             transition={{ duration: 0.18 }}
-            className="absolute right-0 mt-2 w-80"
+            className="absolute right-0 bottom-12 w-80"
             style={{
               background: 'var(--glass-bg)',
               border: '1px solid var(--glass-border)',
