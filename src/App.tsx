@@ -231,7 +231,7 @@ END OF REPORT
       <footer className="py-8 text-center" style={{ color: 'var(--text-muted)' }}>
         <div className="glass-panel-sm inline-block px-6 py-3">
           <p className="text-sm">
-            Built by Team 8 · Taurgo × Cardiff University AI Hackathon · March 2026
+            Built by Sameer Shaik · Taurgo × Cardiff University AI Hackathon · March 2026
           </p>
           <p className="text-xs mt-1">
             Powered by Claude AI (Anthropic) & Nova Pro (Amazon)
